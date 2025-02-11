@@ -1,21 +1,43 @@
 #!/usr/bin/env bun
 
 import { Application } from './src/application';
+import { ServiceContainer } from './src/services/service-container';
+import { ProcessManagerService } from './src/services/process-manager.service';
+import { LoggerService } from './src/services/logger.service';
+import { ConfigService } from './src/services/config.service';
+import { GitHubService } from './src/services/github.service';
+import { CacheService } from './src/services/cache.service';
+import { GitService } from './src/services/git.service';
+import { HistoricalService } from './src/services/historical.service';
+import { MarkdownService } from './src/services/markdown.service';
+import { ErrorHandlerService } from './src/services/error-handler.service';
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-    console.error('\n💥 Uncaught Exception:', error);
-    process.exit(1);
-});
+// Initialize service container
+const container = ServiceContainer.getInstance();
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason) => {
-    console.error('\n💥 Unhandled Promise Rejection:', reason);
-    process.exit(1);
+// Register core services
+container.register(ServiceContainer.TOKENS.Logger, new LoggerService());
+container.register(ServiceContainer.TOKENS.Config, new ConfigService());
+container.register(ServiceContainer.TOKENS.GitHub, new GitHubService());
+container.register(ServiceContainer.TOKENS.Cache, new CacheService());
+container.register(ServiceContainer.TOKENS.Git, new GitService());
+container.register(ServiceContainer.TOKENS.Historical, new HistoricalService());
+container.register(ServiceContainer.TOKENS.Markdown, new MarkdownService());
+container.register('ErrorHandler', new ErrorHandlerService());
+container.register('ProcessManager', new ProcessManagerService());
+
+// Initialize process manager
+const processManager = container.get<ProcessManagerService>('ProcessManager');
+processManager.initialize();
+
+// Register cleanup handlers
+processManager.registerShutdownHandler(async () => {
+    const cache = container.get(ServiceContainer.TOKENS.Cache);
+    cache.clearExpired();
 });
 
 // Start the application
 Application.run().catch((error) => {
-    console.error('\n💥 Application Error:', error);
-    process.exit(1);
+    const errorHandler = container.get<ErrorHandlerService>('ErrorHandler');
+    errorHandler.handleFatalError(error, 'Application startup');
 });

@@ -1,56 +1,80 @@
 import { Repository } from './types';
-import { GITHUB_TOKEN, RESULT_FILE } from './config/config';
-import { GitHubService } from './services/github.service';
-import { CacheService } from './services/cache.service';
-import { GitService } from './services/git.service';
-import { HistoricalService } from './services/historical.service';
-import { MarkdownService } from './services/markdown.service';
-import { ValidationService } from './services/validation.service';
-import { ArgumentParserService } from './services/argument-parser.service';
-import { debug, logError } from './utils/helpers';
+import { ServiceContainer } from './services/service-container';
+import { ILogger } from './interfaces/logger.interface';
+import { IConfigService } from './interfaces/config.interface';
+import { IGitHubService } from './interfaces/github.interface';
+import { ICacheService } from './interfaces/cache.interface';
+import { IGitService } from './interfaces/git.interface';
+import { IHistoricalService } from './interfaces/historical.interface';
+import { IMarkdownService } from './interfaces/markdown.interface';
+import { LoggerService } from './services/logger.service';
+import { ConfigService } from './services/config.service';
 
 export class Application {
+    private static container = ServiceContainer.getInstance();
+    private static logger: ILogger;
+    private static config: IConfigService;
+    private static github: IGitHubService;
+    private static cache: ICacheService;
+    private static git: IGitService;
+    private static historical: IHistoricalService;
+    private static markdown: IMarkdownService;
+
+    private static initializeServices(): void {
+        // Initialize base services
+        this.container.register(ServiceContainer.TOKENS.Logger, new LoggerService());
+        this.container.register(ServiceContainer.TOKENS.Config, new ConfigService());
+
+        // Get service instances
+        this.logger = this.container.get(ServiceContainer.TOKENS.Logger);
+        this.config = this.container.get(ServiceContainer.TOKENS.Config);
+        this.github = this.container.get(ServiceContainer.TOKENS.GitHub);
+        this.cache = this.container.get(ServiceContainer.TOKENS.Cache);
+        this.git = this.container.get(ServiceContainer.TOKENS.Git);
+        this.historical = this.container.get(ServiceContainer.TOKENS.Historical);
+        this.markdown = this.container.get(ServiceContainer.TOKENS.Markdown);
+    }
+
     private static async validateSetup(): Promise<void> {
-        const tokenValidation = ValidationService.validateToken(GITHUB_TOKEN);
-        if (!tokenValidation.isValid) {
-            console.error('❌ GitHub token validation failed:');
-            tokenValidation.errors.forEach(error => console.error(`  • ${error}`));
-            process.exit(1);
+        this.logger.info('Validating setup...');
+        
+        if (!this.config.validate()) {
+            this.logger.fatal('Configuration validation failed');
         }
     }
 
     private static async fetchRepositories(): Promise<Repository[]> {
         const repos: Repository[] = [];
-        const controller = new AbortController();
+        const options = this.config.options;
 
         try {
-            await GitHubService.checkAccess();
+            await this.github.checkAccess();
 
-            for (let year = DEFAULT_OPTIONS.yearStart; year <= DEFAULT_OPTIONS.yearEnd; year++) {
-                if (repos.length >= DEFAULT_OPTIONS.maxRepos) break;
+            for (let year = options.yearStart; year <= options.yearEnd; year++) {
+                if (repos.length >= options.maxRepos) break;
 
                 const startDate = `${year}-01-01`;
                 const endDate = `${year}-12-31`;
                 
-                console.log(`\n📅 Searching repositories from ${startDate} to ${endDate}...`);
+                this.logger.info(`Searching repositories from ${startDate} to ${endDate}...`);
                 
                 try {
                     let page = 1;
                     let hasMore = true;
                     let yearRepos = 0;
                     
-                    while (hasMore && repos.length < DEFAULT_OPTIONS.maxRepos) {
+                    while (hasMore && repos.length < options.maxRepos) {
                         const pagePromises: Promise<Repository[]>[] = [];
                         
-                        for (let i = 0; i < DEFAULT_OPTIONS.concurrency && (page + i) <= 10; i++) {
-                            const cacheKey = CacheService.getCacheKey(year, page + i, DEFAULT_OPTIONS.minStars);
-                            const cachedData = CacheService.get(cacheKey);
+                        for (let i = 0; i < options.concurrency && (page + i) <= 10; i++) {
+                            const cacheKey = this.cache.getCacheKey(year, page + i, options.minStars);
+                            const cachedData = this.cache.get(cacheKey);
                             
                             if (cachedData) {
                                 pagePromises.push(Promise.resolve(cachedData));
                             } else {
-                                const query = `pushed:${startDate}..${endDate} archived:false stars:>=${DEFAULT_OPTIONS.minStars}`;
-                                pagePromises.push(GitHubService.searchRepositories(query, page + i));
+                                const query = `pushed:${startDate}..${endDate} archived:false stars:>=${options.minStars}`;
+                                pagePromises.push(this.github.searchRepositories(query, page + i));
                             }
                         }
                         
@@ -67,29 +91,29 @@ export class Application {
                         repos.push(...newRepos);
                         yearRepos += newRepos.length;
                         
-                        console.log(`  📊 Found ${yearRepos} repos in ${year} (Total: ${repos.length})`);
+                        this.logger.info(`Found ${yearRepos} repos in ${year} (Total: ${repos.length})`);
                         
-                        if (repos.length >= DEFAULT_OPTIONS.maxRepos) {
-                            repos.splice(DEFAULT_OPTIONS.maxRepos);
+                        if (repos.length >= options.maxRepos) {
+                            repos.splice(options.maxRepos);
                             break;
                         }
                         
-                        if (page + DEFAULT_OPTIONS.concurrency > 10) {
-                            console.log(`  ⚠️ Reached GitHub's search result limit for ${year}`);
+                        if (page + options.concurrency > 10) {
+                            this.logger.warn(`Reached GitHub's search result limit for ${year}`);
                             hasMore = false;
                             break;
                         }
                         
-                        page += DEFAULT_OPTIONS.concurrency;
+                        page += options.concurrency;
                     }
                 } catch (error) {
-                    logError(error, `Fetching repositories for ${year}`);
+                    this.logger.error(`Error fetching repositories for ${year}:`, error);
                     if (repos.length === 0) throw error;
                     break;
                 }
             }
         } catch (error) {
-            logError(error, 'Repository fetching');
+            this.logger.error('Repository fetching failed:', error);
             throw error;
         }
 
@@ -98,71 +122,72 @@ export class Application {
 
     private static async generateAndSaveReport(repos: Repository[]): Promise<void> {
         try {
-            const comparison = await HistoricalService.compareWithPrevious(repos);
-            const markdown = MarkdownService.generateMarkdown(repos, comparison);
+            const comparison = await this.historical.compareWithPrevious(repos);
+            const markdown = this.markdown.generateMarkdown(repos, comparison);
             
-            await Bun.write(RESULT_FILE, markdown);
-            await HistoricalService.saveData(repos);
+            await Bun.write(this.config.resultFile, markdown);
+            await this.historical.saveData(repos);
             
-            if (DEFAULT_OPTIONS.autoPush) {
+            if (this.config.options.autoPush) {
                 const date = new Date().toISOString().split('T')[0];
-                const success = await GitService.commitAndPush(
-                    RESULT_FILE,
+                const success = await this.git.commitAndPush(
+                    this.config.resultFile,
                     `Update old repositories list (${date})`
                 );
                 
                 if (success) {
-                    console.log('✅ Successfully pushed changes to repository');
+                    this.logger.info('Successfully pushed changes to repository');
                 } else {
-                    console.log('⚠️ Failed to push changes');
+                    this.logger.warn('Failed to push changes');
                 }
             }
         } catch (error) {
-            logError(error, 'Report generation');
+            this.logger.error('Report generation failed:', error);
             throw error;
         }
     }
 
     static async run(): Promise<void> {
-        console.log('🚀 Starting Old Repository Finder...\n');
+        this.logger.info('Starting Old Repository Finder...');
         
         try {
-            // Parse command line arguments
-            DEFAULT_OPTIONS = await ArgumentParserService.parse(process.argv.slice(2));
+            // Initialize services
+            this.initializeServices();
             
-            // Validate setup
+            // Parse command line arguments and validate setup
             await this.validateSetup();
             
             // Show configuration
-            console.log('\n📋 Configuration:');
-            console.log(`  • Search Period: ${DEFAULT_OPTIONS.yearStart}-${DEFAULT_OPTIONS.yearEnd}`);
-            console.log(`  • Minimum Stars: ${DEFAULT_OPTIONS.minStars}`);
-            console.log(`  • Maximum Repos: ${DEFAULT_OPTIONS.maxRepos}`);
-            console.log(`  • Concurrency: ${DEFAULT_OPTIONS.concurrency}`);
-            console.log(`  • Auto Push: ${DEFAULT_OPTIONS.autoPush ? 'Yes' : 'No'}\n`);
+            const options = this.config.options;
+            this.logger.info('Configuration:', {
+                searchPeriod: `${options.yearStart}-${options.yearEnd}`,
+                minStars: options.minStars,
+                maxRepos: options.maxRepos,
+                concurrency: options.concurrency,
+                autoPush: options.autoPush
+            });
             
             // Start processing
             const startTime = Date.now();
             const repos = await this.fetchRepositories();
 
             if (repos.length === 0) {
-                console.log('\n⚠️ No repositories found matching the criteria');
+                this.logger.warn('No repositories found matching the criteria');
                 return;
             }
 
             const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-            console.log(`\n🎉 Found ${repos.length} repositories in ${duration}s`);
+            this.logger.info(`Found ${repos.length} repositories in ${duration}s`);
 
             // Generate and save report
             await this.generateAndSaveReport(repos);
             
             // Clean up
-            CacheService.clearExpired();
+            this.cache.clearExpired();
             
-            console.log('\n✨ Done!');
+            this.logger.info('Operation completed successfully');
         } catch (error) {
-            console.error('\n❌ Fatal error:', error instanceof Error ? error.message : error);
-            process.exit(1);
+            this.logger.fatal('Application error:', error);
         }
     }
 }
