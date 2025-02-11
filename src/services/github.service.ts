@@ -1,48 +1,48 @@
 import { Repository, GitHubSearchResponse } from '../types';
-import { GitHubAPIError, RateLimitError } from '../utils/errors';
-import { debug, logError } from '../utils/helpers';
-import { GITHUB_HEADERS, REQUEST_TIMEOUT } from '../config/config';
+import { IGitHubService } from '../interfaces/github.interface';
+import { ILogger } from '../interfaces/logger.interface';
+import { IConfigService } from '../interfaces/config.interface';
+import { ServiceContainer } from './service-container';
+import { GitHubApiError, RateLimitError, NetworkError } from '../utils/errors';
 
-export class GitHubService {
-    private static async fetchWithRetry(url: string, options: { headers: any, retries?: number, timeout?: number } = { headers: {}, retries: 3 }): Promise<Response> {
-        const { retries = 3, timeout = REQUEST_TIMEOUT, ...fetchOptions } = options;
-        let lastError: Error | null = null;
+export class GitHubService implements IGitHubService {
+    private readonly logger: ILogger;
+    private readonly config: IConfigService;
+    private rateLimitRemaining: number = -1;
+    private rateLimitReset: number = 0;
 
-        debug('Fetching URL:', url);
-        debug('Request options:', { ...fetchOptions, timeout });
+    constructor() {
+        const container = ServiceContainer.getInstance();
+        this.logger = container.get<ILogger>(ServiceContainer.TOKENS.Logger);
+        this.config = container.get<IConfigService>(ServiceContainer.TOKENS.Config);
+    }
 
-        for (let i = 0; i < retries; i++) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), timeout);
-                
-                debug(`Attempt ${i + 1}/${retries}`);
-                const response = await fetch(url, {
-                    ...fetchOptions,
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                debug('Response status:', response.status);
-                
-                if (response.ok) return response;
-                
-                const errorData = await response.json();
-                debug('Error response:', errorData);
+    private get headers(): Record<string, string> {
+        return {
+            'Authorization': `token ${this.config.githubToken}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'OldReposFinder/1.0'
+        };
+    }
 
-                if (response.status === 429) {
-                    const resetTime = parseInt(response.headers.get('x-ratelimit-reset') || '0') * 1000;
-                    throw new RateLimitError(resetTime);
-                }
-                
-                throw new GitHubAPIError(response.status, JSON.stringify(errorData));
-            } catch (error) {
-                lastError = error as Error;
-                logError(error, `Fetch attempt ${i + 1}`);
+    private async handleRateLimit(headers: Headers): Promise<void> {
+        this.rateLimitRemaining = parseInt(headers.get('x-ratelimit-remaining') || '-1');
+        this.rateLimitReset = parseInt(headers.get('x-ratelimit-reset') || '0') * 1000;
+        const rateLimit = parseInt(headers.get('x-ratelimit-limit') || '0');
 
-                if (error instanceof RateLimitError) {
-                    const waitTime = Math.ceil((error.resetTime - Date.now()) / 1000);
-                    debug('Rate limit details:', { resetTime: error.resetTime, waitTime });
+        this.logger.debug('Rate limit status:', {
+            remaining: this.rateLimitRemaining,
+            reset: new Date(this.rateLimitReset).toLocaleString(),
+            limit: rateLimit
+        });
+
+        if (this.rateLimitRemaining < 10) {
+            const waitTime = Math.max(0, this.rateLimitReset - Date.now());
+            if (waitTime > 0) {
+                this.logger.warn(`Rate limit low (${this.rateLimitRemaining}), waiting ${Math.ceil(waitTime / 1000)}s for reset`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+            }
+        }
                     console.log(`⏳ Rate limit reached. Waiting ${waitTime} seconds...`);
                     await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
                     i--; // Retry this attempt
