@@ -1,87 +1,128 @@
-import { debug, logError } from '../utils/helpers';
+import { IGitService } from '../interfaces/git.interface';
+import { ILogger } from '../interfaces/logger.interface';
+import { ServiceContainer } from './service-container';
+import { GitError } from '../utils/errors';
 
-export class GitService {
-    static async checkChanges(): Promise<boolean> {
+export class GitService implements IGitService {
+    private readonly logger: ILogger;
+
+    constructor() {
+        this.logger = ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger);
+    }
+
+    private async executeGitCommand(command: string[]): Promise<{ success: boolean; output: string }> {
         try {
-            const gitStatus = Bun.spawn(["git", "status", "--porcelain"], {
-                stdout: "pipe"
+            const process = Bun.spawn(command, {
+                stdout: "pipe",
+                stderr: "pipe"
             });
-            const stdout = await new Response(gitStatus.stdout).text();
-            return stdout.trim().length > 0;
+
+            const [stdout, stderr] = await Promise.all([
+                new Response(process.stdout).text(),
+                new Response(process.stderr).text()
+            ]);
+
+            const exitCode = await process.exited;
+
+            if (exitCode !== 0) {
+                throw new GitError(command.join(' '), stderr);
+            }
+
+            return { success: true, output: stdout.trim() };
         } catch (error) {
-            logError(error, 'Git status check');
-            return false;
+            if (error instanceof GitError) {
+                throw error;
+            }
+            throw new GitError(command.join(' '), String(error));
         }
     }
 
-    static async commitAndPush(filePath: string, message: string): Promise<boolean> {
+    async checkChanges(): Promise<boolean> {
         try {
-            debug('Checking for changes...');
+            const { output } = await this.executeGitCommand(["git", "status", "--porcelain"]);
+            return output.length > 0;
+        } catch (error) {
+            this.logger.error('Failed to check git changes:', error);
+            throw error;
+        }
+    }
+
+    async commitAndPush(filePath: string, message: string): Promise<boolean> {
+        try {
+            this.logger.debug('Checking for changes...');
             const hasChanges = await this.checkChanges();
             
             if (!hasChanges) {
-                debug('No changes to commit');
+                this.logger.debug('No changes to commit');
                 return false;
             }
 
-            debug('Adding file to git...');
-            const addProcess = Bun.spawn(["git", "add", filePath]);
-            await addProcess.exited;
+            // Stage the file
+            this.logger.debug(`Staging file: ${filePath}`);
+            await this.executeGitCommand(["git", "add", filePath]);
 
-            debug('Creating commit...');
-            const commitProcess = Bun.spawn(["git", "commit", "-m", message]);
-            await commitProcess.exited;
+            // Create commit
+            this.logger.debug('Creating commit...');
+            await this.executeGitCommand(["git", "commit", "-m", message]);
 
-            debug('Pushing changes...');
-            const pushProcess = Bun.spawn(["git", "push"]);
-            await pushProcess.exited;
+            // Check if we need to pull first
+            if (await this.hasRemoteChanges()) {
+                this.logger.debug('Remote changes detected, pulling first...');
+                await this.pull();
+            }
 
-            debug('Successfully pushed changes');
+            // Push changes
+            this.logger.debug('Pushing changes...');
+            await this.executeGitCommand(["git", "push"]);
+
+            this.logger.info('Successfully pushed changes');
             return true;
         } catch (error) {
-            logError(error, 'Git commit and push');
-            return false;
+            this.logger.error('Failed to commit and push:', error);
+            throw error;
         }
     }
 
-    static async getCurrentBranch(): Promise<string> {
+    async getCurrentBranch(): Promise<string> {
         try {
-            const branchProcess = Bun.spawn(["git", "rev-parse", "--abbrev-ref", "HEAD"], {
-                stdout: "pipe"
-            });
-            const stdout = await new Response(branchProcess.stdout).text();
-            return stdout.trim();
+            const { output } = await this.executeGitCommand(["git", "rev-parse", "--abbrev-ref", "HEAD"]);
+            return output;
         } catch (error) {
-            logError(error, 'Get current branch');
-            return 'unknown';
+            this.logger.error('Failed to get current branch:', error);
+            throw error;
         }
     }
 
-    static async hasRemoteChanges(): Promise<boolean> {
+    async hasRemoteChanges(): Promise<boolean> {
         try {
-            const fetchProcess = Bun.spawn(["git", "fetch"]);
-            await fetchProcess.exited;
+            // Fetch latest changes
+            await this.executeGitCommand(["git", "fetch"]);
 
             const branch = await this.getCurrentBranch();
-            const diffProcess = Bun.spawn(["git", "rev-list", "HEAD...origin/" + branch, "--count"], {
-                stdout: "pipe"
-            });
-            const stdout = await new Response(diffProcess.stdout).text();
-            return parseInt(stdout.trim()) > 0;
+            const { output } = await this.executeGitCommand(["git", "rev-list", "HEAD...origin/" + branch, "--count"]);
+            
+            return parseInt(output) > 0;
         } catch (error) {
-            logError(error, 'Check remote changes');
-            return false;
+            this.logger.error('Failed to check remote changes:', error);
+            throw error;
         }
     }
 
-    static async pull(): Promise<boolean> {
+    async pull(): Promise<boolean> {
         try {
-            debug('Pulling latest changes...');
-            const pullProcess = Bun.spawn(["git", "pull"]);
-            await pullProcess.exited;
+            await this.executeGitCommand(["git", "pull"]);
             return true;
         } catch (error) {
-            logError(error, 'Git pull');
+            this.logger.error('Failed to pull changes:', error);
+            throw error;
+        }
+    }
+
+    async isGitRepo(): Promise<boolean> {
+        try {
+            await this.executeGitCommand(["git", "rev-parse", "--git-dir"]);
+            return true;
+        } catch {
             return false;
         }
     }

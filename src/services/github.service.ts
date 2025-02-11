@@ -43,59 +43,119 @@ export class GitHubService implements IGitHubService {
                 await new Promise(resolve => setTimeout(resolve, waitTime));
             }
         }
-                    console.log(`⏳ Rate limit reached. Waiting ${waitTime} seconds...`);
-                    await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
-                    i--; // Retry this attempt
+    }
+
+    private async fetchWithRetry(url: string, options: RequestInit = {}): Promise<Response> {
+        const maxRetries = 3;
+        let lastError: Error | null = null;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), this.config.requestTimeout);
+
+                const response = await fetch(url, {
+                    ...options,
+                    headers: this.headers,
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                await this.handleRateLimit(response.headers);
+
+                if (response.ok) {
+                    return response;
+                }
+
+                const errorData = await response.json();
+
+                if (response.status === 429) {
+                    throw new RateLimitError(
+                        this.rateLimitReset / 1000,
+                        this.rateLimitRemaining,
+                        parseInt(response.headers.get('x-ratelimit-limit') || '0')
+                    );
+                }
+
+                throw new GitHubApiError(
+                    response.status,
+                    errorData.message,
+                    errorData.documentation_url
+                );
+            } catch (error) {
+                lastError = error as Error;
+
+                if (error instanceof RateLimitError) {
+                    const waitTime = Math.max(0, error.resetTime * 1000 - Date.now());
+                    this.logger.warn(`Rate limit exceeded, waiting ${Math.ceil(waitTime / 1000)}s`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    attempt--; // Don't count rate limit retries
                     continue;
                 }
-                
-                if (error instanceof Error && error.name === 'AbortError') {
-                    debug('Request timed out after', timeout, 'ms');
-                    console.log('⏱️ Request timed out, retrying...');
+
+                if (error.name === 'AbortError') {
+                    this.logger.warn(`Request timeout on attempt ${attempt}/${maxRetries}`);
+                } else {
+                    this.logger.warn(`Request failed on attempt ${attempt}/${maxRetries}:`, error);
                 }
-                
-                if (i < retries - 1) {
-                    const waitTime = Math.pow(2, i) * 1000;
-                    debug('Retry wait time:', waitTime);
-                    console.log(`🔄 Retry ${i + 1}/${retries} after ${waitTime}ms...`);
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
+
+                if (attempt < maxRetries) {
+                    const delay = Math.pow(2, attempt) * 1000;
+                    this.logger.debug(`Retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
         }
-        
-        throw lastError;
+
+        if (lastError instanceof GitHubApiError || lastError instanceof RateLimitError) {
+            throw lastError;
+        }
+
+        throw new NetworkError(
+            lastError || new Error('Unknown error'),
+            url
+        );
     }
 
-    static async checkAccess(): Promise<void> {
+    async checkAccess(): Promise<void> {
         try {
-            const response = await this.fetchWithRetry('https://api.github.com/rate_limit', { headers: GITHUB_HEADERS });
-            if (!response.ok) {
-                const data = await response.json();
-                throw new GitHubAPIError(response.status, JSON.stringify(data));
-            }
+            const response = await this.fetchWithRetry('https://api.github.com/rate_limit');
             const data = await response.json();
-            const remaining = data.resources.search.remaining;
-            const resetTime = new Date(data.resources.search.reset * 1000).toLocaleTimeString();
-            console.log(`ℹ️ GitHub API: ${remaining} requests remaining, resets at ${resetTime}`);
+            
+            this.logger.info('GitHub API access verified:', {
+                remaining: data.resources.search.remaining,
+                reset: new Date(data.resources.search.reset * 1000).toLocaleString(),
+                limit: data.resources.search.limit
+            });
         } catch (error) {
-            if (error instanceof GitHubAPIError) {
+            if (error instanceof GitHubApiError) {
                 throw new Error(`GitHub API access failed: ${error.message}`);
             }
-            throw new Error('Failed to check GitHub API access');
+            throw error;
         }
     }
 
-    static async searchRepositories(query: string, page: number): Promise<Repository[]> {
+    async searchRepositories(query: string, page: number): Promise<Repository[]> {
         const encodedQuery = encodeURIComponent(query);
         const url = `https://api.github.com/search/repositories?q=${encodedQuery}&sort=updated&order=asc&per_page=100&page=${page}`;
-        
-        const response = await this.fetchWithRetry(url, { 
-            headers: GITHUB_HEADERS, 
-            retries: 3,
-            timeout: REQUEST_TIMEOUT 
-        });
-        
-        const data: GitHubSearchResponse = await response.json();
-        return data.items;
+
+        try {
+            const response = await this.fetchWithRetry(url);
+            const data: GitHubSearchResponse = await response.json();
+
+            this.logger.debug(`Retrieved ${data.items.length} repositories from page ${page}`);
+            return data.items;
+        } catch (error) {
+            this.logger.error(`Failed to search repositories (page ${page}):`, error);
+            throw error;
+        }
+    }
+
+    async getRateLimit(): Promise<{ remaining: number; reset: Date }> {
+        return {
+            remaining: this.rateLimitRemaining,
+            reset: new Date(this.rateLimitReset)
+        };
     }
 }
