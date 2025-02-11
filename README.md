@@ -48,10 +48,16 @@ bun run index.ts --min-stars 100 --max-repos 500 --concurrency 5
 - `--concurrency`: Number of concurrent API requests (default: 3)
 - `--year-start`: Start year for repository search (default: 2008)
 - `--year-end`: End year for repository search (default: 2013)
+- `--auto-push`: Automatically commit and push changes to git repository
 
 Example with year range:
 ```bash
 bun run index.ts --min-stars 100 --year-start 2010 --year-end 2012
+```
+
+Example with auto-push:
+```bash
+bun run index.ts --min-stars 100 --year-start 2010 --year-end 2012 --auto-push
 ```
 
 ## Search Strategy
@@ -74,3 +80,11 @@ A summary section includes:
 - Total repositories found
 - List of languages
 - Generation date
+
+## Git Integration
+
+When using the `--auto-push` flag, the tool will:
+1. Check for changes in the results file
+2. Commit changes with a timestamped message
+3. Push to the current branch
+4. Skip if no changes are detected

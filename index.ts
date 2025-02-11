@@ -24,6 +24,7 @@ interface Options {
     concurrency: number;
     yearStart: number;  // Start year for the search range
     yearEnd: number;    // End year for the search range
+    autoPush: boolean;  // New option for auto-pushing changes
 }
 
 const DEFAULT_OPTIONS: Options = {
@@ -31,7 +32,8 @@ const DEFAULT_OPTIONS: Options = {
     maxRepos: 1000,
     concurrency: 3,
     yearStart: 2008,   // Default to searching from 2008
-    yearEnd: 2013      // Up to 2013 (10 years ago from 2023)
+    yearEnd: 2013,     // Up to 2013 (10 years ago from 2023)
+    autoPush: false    // Disabled by default
 };
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
@@ -176,27 +178,70 @@ function generateMarkdown(repos: Repository[]): string {
     return content + summary;
 }
 
+async function commitAndPush() {
+    const gitStatus = Bun.spawn(["git", "status", "--porcelain"], {
+        stdout: "pipe"
+    });
+    const stdout = await new Response(gitStatus.stdout).text();
+    
+    if (!stdout.trim()) {
+        console.log("📝 No changes to commit");
+        return;
+    }
+
+    try {
+        console.log("🔄 Committing and pushing changes...");
+        
+        // Add changes
+        const addProcess = Bun.spawn(["git", "add", RESULT_FILE]);
+        await addProcess.exited;
+
+        // Create commit with timestamp
+        const date = new Date().toISOString().split('T')[0];
+        const commitMsg = `Update old repositories list (${date})`;
+        const commitProcess = Bun.spawn(["git", "commit", "-m", commitMsg]);
+        await commitProcess.exited;
+
+        // Push changes
+        const pushProcess = Bun.spawn(["git", "push"]);
+        await pushProcess.exited;
+
+        console.log("✅ Successfully pushed changes to repository");
+    } catch (error) {
+        console.error("❌ Failed to push changes:", error instanceof Error ? error.message : error);
+        // Don't exit, as we still want to keep the generated file
+    }
+}
+
 async function parseArgs() {
     const args = process.argv.slice(2);
-    for (let i = 0; i < args.length; i += 2) {
+    for (let i = 0; i < args.length; i++) {
         const key = args[i];
         const value = args[i + 1];
         
         switch (key) {
             case '--min-stars':
                 DEFAULT_OPTIONS.minStars = parseInt(value);
+                i++;
                 break;
             case '--max-repos':
                 DEFAULT_OPTIONS.maxRepos = parseInt(value);
+                i++;
                 break;
             case '--concurrency':
                 DEFAULT_OPTIONS.concurrency = parseInt(value);
+                i++;
                 break;
             case '--year-start':
                 DEFAULT_OPTIONS.yearStart = parseInt(value);
+                i++;
                 break;
             case '--year-end':
                 DEFAULT_OPTIONS.yearEnd = parseInt(value);
+                i++;
+                break;
+            case '--auto-push':
+                DEFAULT_OPTIONS.autoPush = true;
                 break;
         }
     }
@@ -223,6 +268,10 @@ async function main() {
         const markdown = generateMarkdown(repos);
         await Bun.write(RESULT_FILE, markdown);
         console.log(`📄 Results saved to ${RESULT_FILE}`);
+
+        if (DEFAULT_OPTIONS.autoPush) {
+            await commitAndPush();
+        }
 
     } catch (error) {
         console.error("🔴 Error:", error instanceof Error ? error.message : error);
