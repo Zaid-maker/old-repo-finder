@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
     push:
-        branches: [ main ]
+        branches: [main]
     pull_request:
-        branches: [ main ]
+        branches: [main]
 
 jobs:
     build-and-test:
@@ -13,34 +13,40 @@ jobs:
         strategy:
             matrix:
                 node-version: [20.x, 21.x]
+            fail-fast: true
 
         steps:
-        - uses: actions/checkout@v3
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-        - name: Setup Bun
-          uses: oven-sh/setup-bun@v1
-          with:
-            bun-version: latest
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v1
+              with:
+                    bun-version: latest
 
-        - name: Use Node.js ${{ matrix.node-version }}
-          uses: actions/setup-node@v3
-          with:
-            node-version: ${{ matrix.node-version }}
-            cache: 'npm'
+            - name: Setup Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: 'npm'
 
-        - name: Install dependencies
-          run: bun install
+            - name: Install dependencies
+              run: bun install
+                
+            - name: Verify dependency cache
+              run: bun install --frozen-lockfile
 
-        # - name: Check code formatting
-        #   run: bunx prettier --check "src/**/*.{ts,tsx}"
+            # Uncomment these steps when you're ready to use them
+            # - name: Format check
+            #   run: bunx prettier --check "src/**/*.{ts,tsx}"
 
-        # - name: Build
-        #   run: bun run build
+            # - name: Build
+            #   run: bun run build
 
-        # - name: Run tests
-        #   run: bun test
+            # - name: Test
+            #   run: bun test
 
-        # - name: Upload coverage reports to Codecov
-        #   uses: codecov/codecov-action@v3
-        #   env:
-        #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+            # - name: Upload coverage
+            #   uses: codecov/codecov-action@v3
+            #   env:
+            #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
