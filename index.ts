@@ -11,6 +11,7 @@ import { GitService } from './src/services/git.service';
 import { HistoricalService } from './src/services/historical.service';
 import { MarkdownService } from './src/services/markdown.service';
 import { ErrorHandlerService } from './src/services/error-handler.service';
+import { MonitoringService } from './src/services/monitoring.service';
 
 // Initialize service container
 const container = ServiceContainer.getInstance();
@@ -23,21 +24,37 @@ container.register(ServiceContainer.TOKENS.Cache, new CacheService());
 container.register(ServiceContainer.TOKENS.Git, new GitService());
 container.register(ServiceContainer.TOKENS.Historical, new HistoricalService());
 container.register(ServiceContainer.TOKENS.Markdown, new MarkdownService());
-container.register('ErrorHandler', new ErrorHandlerService());
-container.register('ProcessManager', new ProcessManagerService());
+container.register(ServiceContainer.TOKENS.Monitoring, new MonitoringService());
+container.register(ServiceContainer.TOKENS.ErrorHandler, new ErrorHandlerService());
+container.register(ServiceContainer.TOKENS.ProcessManager, new ProcessManagerService());
 
 // Initialize process manager
-const processManager = container.get<ProcessManagerService>('ProcessManager');
+const processManager = container.get<ProcessManagerService>(ServiceContainer.TOKENS.ProcessManager);
 processManager.initialize();
+
+// Get monitoring service
+const monitoring = container.get<MonitoringService>(ServiceContainer.TOKENS.Monitoring);
 
 // Register cleanup handlers
 processManager.registerShutdownHandler(async () => {
-    const cache = container.get(ServiceContainer.TOKENS.Cache);
+    const cache = container.get<CacheService>(ServiceContainer.TOKENS.Cache);
+    monitoring.startOperation('cleanup');
     cache.clearExpired();
+    monitoring.endOperation('cleanup');
+    monitoring.logResourceUsage();
 });
 
+// Start monitoring application startup
+monitoring.startOperation('app_startup');
+
 // Start the application
-Application.run().catch((error) => {
-    const errorHandler = container.get<ErrorHandlerService>('ErrorHandler');
-    errorHandler.handleFatalError(error, 'Application startup');
-});
+Application.run()
+    .then(() => {
+        monitoring.endOperation('app_startup');
+        monitoring.logResourceUsage();
+    })
+    .catch((error) => {
+        monitoring.endOperation('app_startup');
+        const errorHandler = container.get<ErrorHandlerService>(ServiceContainer.TOKENS.ErrorHandler);
+        errorHandler.handleFatalError(error, 'Application startup');
+    });

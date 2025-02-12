@@ -5,6 +5,7 @@ import { ICacheService } from '../interfaces/cache.interface';
 import { IGitService } from '../interfaces/git.interface';
 import { IHistoricalService } from '../interfaces/historical.interface';
 import { IMarkdownService } from '../interfaces/markdown.interface';
+import { IMonitoringService } from '../interfaces/monitoring.interface';
 
 export class ServiceContainer {
     private static instance: ServiceContainer;
@@ -38,7 +39,10 @@ export class ServiceContainer {
         Cache: 'Cache',
         Git: 'Git',
         Historical: 'Historical',
-        Markdown: 'Markdown'
+        Markdown: 'Markdown',
+        Monitoring: 'Monitoring',
+        ErrorHandler: 'ErrorHandler',
+        ProcessManager: 'ProcessManager'
     } as const;
 }
 

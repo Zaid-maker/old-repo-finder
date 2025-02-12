@@ -9,6 +9,7 @@ import { IHistoricalService } from './interfaces/historical.interface';
 import { IMarkdownService } from './interfaces/markdown.interface';
 import { LoggerService } from './services/logger.service';
 import { ConfigService } from './services/config.service';
+import { IMonitoringService } from './interfaces/monitoring.interface';
 
 export class Application {
     private static container = ServiceContainer.getInstance();
@@ -19,6 +20,7 @@ export class Application {
     private static git: IGitService;
     private static historical: IHistoricalService;
     private static markdown: IMarkdownService;
+    private static monitoring: IMonitoringService;
 
     private static initializeServices(): void {
         // Initialize base services
@@ -33,20 +35,25 @@ export class Application {
         this.git = this.container.get(ServiceContainer.TOKENS.Git);
         this.historical = this.container.get(ServiceContainer.TOKENS.Historical);
         this.markdown = this.container.get(ServiceContainer.TOKENS.Markdown);
+        this.monitoring = this.container.get(ServiceContainer.TOKENS.Monitoring);
     }
 
     private static async validateSetup(): Promise<void> {
+        this.monitoring.startOperation('validate_setup');
         this.logger.info('Validating setup...');
         
         if (!this.config.validate()) {
+            this.monitoring.endOperation('validate_setup');
             this.logger.fatal('Configuration validation failed');
         }
+        this.monitoring.endOperation('validate_setup');
     }
 
     private static async fetchRepositories(): Promise<Repository[]> {
         const repos: Repository[] = [];
         const options = this.config.options;
 
+        this.monitoring.startOperation('fetch_repositories');
         try {
             await this.github.checkAccess();
 
@@ -66,6 +73,7 @@ export class Application {
                     while (hasMore && repos.length < options.maxRepos) {
                         const pagePromises: Promise<Repository[]>[] = [];
                         
+                        this.monitoring.startOperation(`fetch_page_${year}_${page}`);
                         for (let i = 0; i < options.concurrency && (page + i) <= 10; i++) {
                             const cacheKey = this.cache.getCacheKey(year, page + i, options.minStars);
                             const cachedData = this.cache.get(cacheKey);
@@ -82,6 +90,7 @@ export class Application {
                         
                         const results = await Promise.all(pagePromises);
                         const newRepos = results.flat();
+                        this.monitoring.endOperation(`fetch_page_${year}_${page}`);
                         
                         if (newRepos.length === 0) {
                             hasMore = false;
@@ -115,12 +124,15 @@ export class Application {
         } catch (error) {
             this.logger.error('Repository fetching failed:', error);
             throw error;
+        } finally {
+            this.monitoring.endOperation('fetch_repositories');
         }
 
         return repos;
     }
 
     private static async generateAndSaveReport(repos: Repository[]): Promise<void> {
+        this.monitoring.startOperation('generate_report');
         try {
             const comparison = await this.historical.compareWithPrevious(repos);
             const markdown = this.markdown.generateMarkdown(repos, comparison);
@@ -129,6 +141,7 @@ export class Application {
             await this.historical.saveData(repos);
             
             if (this.config.options.autoPush) {
+                this.monitoring.startOperation('git_push');
                 const date = new Date().toISOString().split('T')[0];
                 const success = await this.git.commitAndPush(
                     this.config.resultFile,
@@ -140,14 +153,18 @@ export class Application {
                 } else {
                     this.logger.warn('Failed to push changes');
                 }
+                this.monitoring.endOperation('git_push');
             }
         } catch (error) {
             this.logger.error('Report generation failed:', error);
             throw error;
+        } finally {
+            this.monitoring.endOperation('generate_report');
         }
     }
 
     static async run(): Promise<void> {
+        this.monitoring.startOperation('full_execution');
         this.logger.info('Starting Old Repository Finder...');
         
         try {
@@ -183,11 +200,20 @@ export class Application {
             await this.generateAndSaveReport(repos);
             
             // Clean up
+            this.monitoring.startOperation('cleanup');
             this.cache.clearExpired();
+            this.monitoring.endOperation('cleanup');
             
             this.logger.info('Operation completed successfully');
+            
+            // Log final performance metrics
+            const performanceStats = this.monitoring.getOperationStats();
+            this.logger.debug('Performance metrics:', Object.fromEntries(performanceStats));
+            this.monitoring.logResourceUsage();
         } catch (error) {
             this.logger.fatal('Application error:', error);
+        } finally {
+            this.monitoring.endOperation('full_execution');
         }
     }
 }
