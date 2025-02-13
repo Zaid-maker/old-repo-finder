@@ -1,0 +1,39 @@
+import { ILogger } from '../interfaces/logger.interface';
+import { ServiceContainer } from './service-container';
+
+export interface IErrorHandler {
+    handleError(error: unknown, context: string): void;
+    handleFatalError(error: unknown, context: string): never;
+}
+
+export class ErrorHandlerService implements IErrorHandler {
+    private readonly logger: ILogger;
+
+    constructor() {
+        this.logger = ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger);
+    }
+
+    private formatError(error: unknown): string {
+        if (error instanceof Error) {
+            return `${error.name}: ${error.message}\n${error.stack || ''}`;
+        }
+        return String(error);
+    }
+
+    handleError(error: unknown, context: string): void {
+        const formattedError = this.formatError(error);
+        this.logger.error(`Error in ${context}:`, formattedError);
+    }
+
+    handleFatalError(error: unknown, context: string): never {
+        const formattedError = this.formatError(error);
+        this.logger.fatal(`Fatal error in ${context}:`, formattedError);
+        process.exit(1);
+    }
+}
+
+// Register the error handler service
+ServiceContainer.getInstance().register(
+    'ErrorHandler',
+    new ErrorHandlerService()
+);
