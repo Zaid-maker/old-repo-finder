@@ -1,8 +1,29 @@
+## 📊 Changes Since Last Run
+
+### ⭐ Star Changes
+| Repository | Before | After | Change |
+|------------|---------|--------|--------|
+| aptana/activejs | 238 | 239 | 📈 +1 |
+| sergi/jsmidi | 186 | 187 | 📈 +1 |
+| jhuckaby/Effect-Games | 579 | 580 | 📈 +1 |
+| jwhitehorn/jsMiner | 255 | 256 | 📈 +1 |
+| CodesInChaos/SoftFloat | 127 | 128 | 📈 +1 |
+| comex/star_ | 141 | 142 | 📈 +1 |
+| miyagawa/github-growler | 215 | 216 | 📈 +1 |
+| id-Software/wolf3d | 2236 | 2237 | 📈 +1 |
+| rickygu/openBMS | 197 | 196 | 📉 -1 |
+| wonderfo/wonderfogo | 1350 | 1351 | 📈 +1 |
+| dianakimball/mentoring | 170 | 171 | 📈 +1 |
+| borismus/game-asset-loader | 109 | 110 | 📈 +1 |
+
+
+---
+
 # 🕰️ GitHub Time Capsule: Repositories from 2010-2012
 
-![Last Updated](https://img.shields.io/badge/Last%20Updated-2%2F11%2F2025-blue)
+![Last Updated](https://img.shields.io/badge/Last%20Updated-2%2F13%2F2025-blue)
 ![Total Repos](https://img.shields.io/badge/Total%20Repos-1000-green)
-![Total Stars](https://img.shields.io/badge/Total%20Stars-214464-yellow)
+![Total Stars](https://img.shields.io/badge/Total%20Stars-214474-yellow)
 
 ## 📈 Executive Summary
 
@@ -15,7 +36,7 @@ This report catalogs 1000 historically significant repositories from the 2010-20
 | Metric | Value |
 |--------|-------|
 | Total Repositories | 1,000 |
-| Total Stars | 214,464 |
+| Total Stars | 214,474 |
 | Average Stars | 214.5 |
 | Languages Found | 32 |
 | Most Used Language | JavaScript |
@@ -29,11 +50,11 @@ This report catalogs 1000 historically significant repositories from the 2010-20
 |------------|-------|----------|-------------|
 | [TermKit](https://github.com/unconed/TermKit) | ⭐ 4,432 | JavaScript | Experimental Terminal platform built on WebKit + node.js. Currently only for Mac and Windows, though... |
 | [iOS-boilerplate](https://github.com/gimenete/iOS-boilerplate) | ⭐ 2,756 | Objective-C | iOS-app template with lots of common tasks solved |
-| [wolf3d](https://github.com/id-Software/wolf3d) | ⭐ 2,236 | N/A | The original open source release of Wolfenstein 3D |
+| [wolf3d](https://github.com/id-Software/wolf3d) | ⭐ 2,237 | N/A | The original open source release of Wolfenstein 3D |
 | [Tangle](https://github.com/worrydream/Tangle) | ⭐ 1,793 | JavaScript | a JavaScript library for reactive documents |
 | [canabalt-ios](https://github.com/ericjohnson/canabalt-ios) | ⭐ 1,583 | Objective-C | Open source release of Canabalt for iOS |
 | [Pears](https://github.com/simplebits/Pears) | ⭐ 1,399 | PHP | No description |
-| [wonderfogo](https://github.com/wonderfo/wonderfogo) | ⭐ 1,350 | N/A | 最近对Go语言很感兴趣，所以整理相关资料，呵呵 |
+| [wonderfogo](https://github.com/wonderfo/wonderfogo) | ⭐ 1,351 | N/A | 最近对Go语言很感兴趣，所以整理相关资料，呵呵 |
 | [Raphters](https://github.com/danielwaterworth/Raphters) | ⭐ 1,286 | C | [DEPRECATED] A web framework for C. |
 | [watchr](https://github.com/mynyml/watchr) | ⭐ 1,271 | Ruby | Modern continuous testing (flexible alternative to Autotest) |
 | [coffeekup](https://github.com/mauricemach/coffeekup) | ⭐ 1,252 | CoffeeScript | Markup as CoffeeScript. |
@@ -97,11 +118,11 @@ Last update distribution by year:
 |------------|-------|----------|-------|--------------|-------------|
 | [TermKit](https://github.com/unconed/TermKit) | [@unconed](https://github.com/unconed) | JavaScript | ⭐ 4,432 | 12/16/2011 | Experimental Terminal platform built on WebKit + node.js. Currently only for Mac and Windows, though... |
 | [iOS-boilerplate](https://github.com/gimenete/iOS-boilerplate) | [@gimenete](https://github.com/gimenete) | Objective-C | ⭐ 2,756 | 2/28/2012 | iOS-app template with lots of common tasks solved |
-| [wolf3d](https://github.com/id-Software/wolf3d) | [@id-Software](https://github.com/id-Software) | N/A | ⭐ 2,236 | 2/6/2012 | The original open source release of Wolfenstein 3D |
+| [wolf3d](https://github.com/id-Software/wolf3d) | [@id-Software](https://github.com/id-Software) | N/A | ⭐ 2,237 | 2/6/2012 | The original open source release of Wolfenstein 3D |
 | [Tangle](https://github.com/worrydream/Tangle) | [@worrydream](https://github.com/worrydream) | JavaScript | ⭐ 1,793 | 11/24/2011 | a JavaScript library for reactive documents |
 | [canabalt-ios](https://github.com/ericjohnson/canabalt-ios) | [@ericjohnson](https://github.com/ericjohnson) | Objective-C | ⭐ 1,583 | 8/20/2011 | Open source release of Canabalt for iOS |
 | [Pears](https://github.com/simplebits/Pears) | [@simplebits](https://github.com/simplebits) | PHP | ⭐ 1,399 | 3/9/2012 | No description |
-| [wonderfogo](https://github.com/wonderfo/wonderfogo) | [@wonderfo](https://github.com/wonderfo) | N/A | ⭐ 1,350 | 3/6/2012 | 最近对Go语言很感兴趣，所以整理相关资料，呵呵 |
+| [wonderfogo](https://github.com/wonderfo/wonderfogo) | [@wonderfo](https://github.com/wonderfo) | N/A | ⭐ 1,351 | 3/6/2012 | 最近对Go语言很感兴趣，所以整理相关资料，呵呵 |
 | [Raphters](https://github.com/danielwaterworth/Raphters) | [@danielwaterworth](https://github.com/danielwaterworth) | C | ⭐ 1,286 | 2/4/2012 | [DEPRECATED] A web framework for C. |
 | [watchr](https://github.com/mynyml/watchr) | [@mynyml](https://github.com/mynyml) | Ruby | ⭐ 1,271 | 10/15/2011 | Modern continuous testing (flexible alternative to Autotest) |
 | [coffeekup](https://github.com/mauricemach/coffeekup) | [@mauricemach](https://github.com/mauricemach) | CoffeeScript | ⭐ 1,252 | 10/26/2011 | Markup as CoffeeScript. |
@@ -133,7 +154,7 @@ Last update distribution by year:
 | [Graph-Easy](https://github.com/ironcamel/Graph-Easy) | [@ironcamel](https://github.com/ironcamel) | Perl | ⭐ 599 | 10/22/2010 | Convert or render graphs (as ASCII, HTML, SVG or via Graphviz) |
 | [Spritemapper](https://github.com/yostudios/Spritemapper) | [@yostudios](https://github.com/yostudios) | JavaScript | ⭐ 594 | 3/28/2012 | CSS Spritemap Generator |
 | [gitpop](https://github.com/astro/gitpop) | [@astro](https://github.com/astro) | JavaScript | ⭐ 580 | 2/19/2011 | More popular than Git*ub |
-| [Effect-Games](https://github.com/jhuckaby/Effect-Games) | [@jhuckaby](https://github.com/jhuckaby) | JavaScript | ⭐ 579 | 5/29/2011 | Classic DHTML JavaScript Game Engine and Web Based IDE |
+| [Effect-Games](https://github.com/jhuckaby/Effect-Games) | [@jhuckaby](https://github.com/jhuckaby) | JavaScript | ⭐ 580 | 5/29/2011 | Classic DHTML JavaScript Game Engine and Web Based IDE |
 | [Cracking-Siri](https://github.com/applidium/Cracking-Siri) | [@applidium](https://github.com/applidium) | Ruby | ⭐ 576 | 11/15/2011 | Files we used to reverse-engineer Siri |
 | [Smooth-CoffeeScript](https://github.com/autotelicum/Smooth-CoffeeScript) | [@autotelicum](https://github.com/autotelicum) | CoffeeScript | ⭐ 576 | 2/4/2012 | A book on functional programming in CoffeeScript |
 | [load.js](https://github.com/node-js-libs/load.js) | [@node-js-libs](https://github.com/node-js-libs) | JavaScript | ⭐ 571 | 9/19/2011 | Lazy-load your JavaScript |
@@ -276,10 +297,10 @@ Last update distribution by year:
 | [dragkit](https://github.com/zac/dragkit) | [@zac](https://github.com/zac) | Objective-C | ⭐ 263 | 11/4/2010 | An iOS opensource framework for supporting Drag & Drop within an application and between application... |
 | [staticmatic](https://github.com/staticmatic/staticmatic) | [@staticmatic](https://github.com/staticmatic) | Ruby | ⭐ 262 | 10/22/2011 | The Lightweight Static Content framework |
 | [ScreenCap](https://github.com/julianshen/ScreenCap) | [@julianshen](https://github.com/julianshen) | C++ | ⭐ 258 | 12/29/2010 | Screen capture for Android |
+| [jsMiner](https://github.com/jwhitehorn/jsMiner) | [@jwhitehorn](https://github.com/jwhitehorn) | JavaScript | ⭐ 256 | 6/24/2011 | A Javascript Bitcoin miner |
 | [GtkRadiant](https://github.com/id-Software/GtkRadiant) | [@id-Software](https://github.com/id-Software) | C++ | ⭐ 256 | 2/1/2012 | GtkRadiant GPL Source Release |
 | [OpenCVForiPhone](https://github.com/aptogo/OpenCVForiPhone) | [@aptogo](https://github.com/aptogo) | C++ | ⭐ 256 | 3/15/2012 | OpenCV build for iPhone with example project |
 | [cohorts](https://github.com/jamesyu/cohorts) | [@jamesyu](https://github.com/jamesyu) | JavaScript | ⭐ 255 | 7/11/2010 | A simple javascript multivariate testing framework |
-| [jsMiner](https://github.com/jwhitehorn/jsMiner) | [@jwhitehorn](https://github.com/jwhitehorn) | JavaScript | ⭐ 255 | 6/24/2011 | A Javascript Bitcoin miner |
 | [overseer](https://github.com/disqus/overseer) | [@disqus](https://github.com/disqus) | Python | ⭐ 255 | 6/27/2011 | A status board built with Django |
 | [websocket-canvas-draw](https://github.com/wesbos/websocket-canvas-draw) | [@wesbos](https://github.com/wesbos) | JavaScript | ⭐ 255 | 8/13/2011 | Realtime Canvas Drawing with Socket.io and Node.JS |
 | [djangode](https://github.com/simonw/djangode) | [@simonw](https://github.com/simonw) | JavaScript | ⭐ 254 | 9/1/2011 | Utilities functions for node.js that borrow some useful concepts from Django |
@@ -297,7 +318,7 @@ Last update distribution by year:
 | [flarevideo](https://github.com/maccman/flarevideo) | [@maccman](https://github.com/maccman) | JavaScript | ⭐ 242 | 9/10/2011 | HTML5 & Flash Video Player |
 | [alice](https://github.com/auser/alice) | [@auser](https://github.com/auser) | Erlang | ⭐ 241 | 5/4/2010 | Monitoring and REST interface to rabbitmq |
 | [Molten-Leading](https://github.com/Wilto/Molten-Leading) | [@Wilto](https://github.com/Wilto) | JavaScript | ⭐ 241 | 2/9/2012 | No description |
-| [activejs](https://github.com/aptana/activejs) | [@aptana](https://github.com/aptana) | JavaScript | ⭐ 238 | 10/27/2010 | ActiveJS |
+| [activejs](https://github.com/aptana/activejs) | [@aptana](https://github.com/aptana) | JavaScript | ⭐ 239 | 10/27/2010 | ActiveJS |
 | [DateSlider](https://github.com/bendemboski/DateSlider) | [@bendemboski](https://github.com/bendemboski) | Java | ⭐ 238 | 11/10/2011 | An alternative DatePicker for Android |
 | [webgl-source](https://github.com/toji/webgl-source) | [@toji](https://github.com/toji) | JavaScript | ⭐ 238 | 1/12/2012 | WebGL renderer for Source Engine levels |
 | [Making-Isometric-Real-time-Games](https://github.com/andrespagella/Making-Isometric-Real-time-Games) | [@andrespagella](https://github.com/andrespagella) | PHP | ⭐ 238 | 2/18/2012 | The official codebase repository of the book Making Isometric Real-Time Games with HTML5, CSS3 and J... |
@@ -338,8 +359,8 @@ Last update distribution by year:
 | [legacy-patchrom](https://github.com/MiCode/legacy-patchrom) | [@MiCode](https://github.com/MiCode) | Java | ⭐ 217 | 2/22/2012 | 反编译/重编译Android ROM移植MIUI2.3技术 (A disassemble and reassemble Android ROM to port MIUI2.3 technology) |
 | [rails_xss](https://github.com/NZKoz/rails_xss) | [@NZKoz](https://github.com/NZKoz) | Ruby | ⭐ 216 | 5/25/2010 | A plugin for rails 2.3.5 applications which switches the default to escape by default.  Later versio... |
 | [picard](https://github.com/dantebronto/picard) | [@dantebronto](https://github.com/dantebronto) | JavaScript | ⭐ 216 | 5/11/2011 | A Micro-framework for node.js |
+| [github-growler](https://github.com/miyagawa/github-growler) | [@miyagawa](https://github.com/miyagawa) | Perl | ⭐ 216 | 10/31/2011 | Growl github updates |
 | [GithubNotifier](https://github.com/catsby/GithubNotifier) | [@catsby](https://github.com/catsby) | Objective-C | ⭐ 215 | 5/11/2011 | Little OS X menu-bar app that posts Growl notifications from your Github network activity |
-| [github-growler](https://github.com/miyagawa/github-growler) | [@miyagawa](https://github.com/miyagawa) | Perl | ⭐ 215 | 10/31/2011 | Growl github updates |
 | [backgroundrb](https://github.com/gnufied/backgroundrb) | [@gnufied](https://github.com/gnufied) | Ruby | ⭐ 214 | 10/27/2011 | A Ruby/Rails job server and scheduler |
 | [ramaze](https://github.com/manveru/ramaze) | [@manveru](https://github.com/manveru) | Ruby | ⭐ 213 | 10/15/2010 | This repository moved to http://github.com/Ramaze/ramaze |
 | [Bogart](https://github.com/tyler/Bogart) | [@tyler](https://github.com/tyler) | C | ⭐ 211 | 8/11/2010 | It's like Sinatra... in C. |
@@ -383,9 +404,9 @@ Last update distribution by year:
 | [jQuery-Chrono](https://github.com/avk/jQuery-Chrono) | [@avk](https://github.com/avk) | JavaScript | ⭐ 197 | 11/23/2011 | Syntactic sugar for JavaScript's setTimeout() and setInterval() |
 | [Community-Icon-Font](https://github.com/Heydon/Community-Icon-Font) | [@Heydon](https://github.com/Heydon) | N/A | ⭐ 197 | 12/18/2011 | To create a collaborative font using SVG |
 | [vote_fu](https://github.com/peteonrails/vote_fu) | [@peteonrails](https://github.com/peteonrails) | Ruby | ⭐ 197 | 2/7/2012 | Vote and Karma Management |
-| [openBMS](https://github.com/rickygu/openBMS) | [@rickygu](https://github.com/rickygu) | Java | ⭐ 197 | 2/23/2012 | Lithium ion Battery Management System for Electric Vehicle |
 | [DesignPatterns-Ruby](https://github.com/adomokos/DesignPatterns-Ruby) | [@adomokos](https://github.com/adomokos) | Ruby | ⭐ 196 | 1/10/2010 | Design Patterns in Ruby - Code samples based on the book with the same title |
 | [dnsserver.js](https://github.com/sh1mmer/dnsserver.js) | [@sh1mmer](https://github.com/sh1mmer) | JavaScript | ⭐ 196 | 10/5/2011 | A DNS server for Node.js |
+| [openBMS](https://github.com/rickygu/openBMS) | [@rickygu](https://github.com/rickygu) | Java | ⭐ 196 | 2/23/2012 | Lithium ion Battery Management System for Electric Vehicle |
 | [Springboard](https://github.com/soulwire/Springboard) | [@soulwire](https://github.com/soulwire) | JavaScript | ⭐ 196 | 3/5/2012 | Springboard helps you setup web projects in seconds and easily manage concatenation, minification an... |
 | [WifiSMS](https://github.com/jlippold/WifiSMS) | [@jlippold](https://github.com/jlippold) | Objective-C | ⭐ 196 | 4/8/2012 | iphone webserver gateway for SMS |
 | [echowaves](https://github.com/dmitryame/echowaves) | [@dmitryame](https://github.com/dmitryame) | JavaScript | ⭐ 195 | 10/27/2011 | Minimalistic Anonymous Photo Sharing |
@@ -416,9 +437,9 @@ Last update distribution by year:
 | [emacs](https://github.com/defunkt/emacs) | [@defunkt](https://github.com/defunkt) | Emacs Lisp | ⭐ 188 | 10/26/2011 | My Emacs config |
 | [zocial](https://github.com/adamstac/zocial) | [@adamstac](https://github.com/adamstac) | Ruby | ⭐ 188 | 11/9/2011 | Sass and Compass CSS3 social buttons framework |
 | [scala-json](https://github.com/stevej/scala-json) | [@stevej](https://github.com/stevej) | Scala | ⭐ 188 | 2/16/2012 | Scala JSON toolkit. Originally from the Odersky "Stairway" Book, tightened up and tests added by Twi... |
+| [jsmidi](https://github.com/sergi/jsmidi) | [@sergi](https://github.com/sergi) | JavaScript | ⭐ 187 | 12/1/2010 | Library for reading/writing midi files in JavaScript |
 | [tempalias](https://github.com/pilif/tempalias) | [@pilif](https://github.com/pilif) | JavaScript | ⭐ 187 | 12/6/2010 | Generate temporary mail aliases for throwaway purposes. This is the full code behind the tempalias.c... |
 | [InfiniTabBar](https://github.com/iosdeveloper/InfiniTabBar) | [@iosdeveloper](https://github.com/iosdeveloper) | Objective-C | ⭐ 187 | 7/10/2011 | A scrolling tab bar with space for infinite items |
-| [jsmidi](https://github.com/sergi/jsmidi) | [@sergi](https://github.com/sergi) | JavaScript | ⭐ 186 | 12/1/2010 | Library for reading/writing midi files in JavaScript |
 | [screw-unit](https://github.com/nathansobo/screw-unit) | [@nathansobo](https://github.com/nathansobo) | JavaScript | ⭐ 186 | 12/29/2010 | A Javascript BDD Framework with nested describes, a convenient assertion syntax, and an intuitive te... |
 | [Arduino_Camera_Control](https://github.com/felis/Arduino_Camera_Control) | [@felis](https://github.com/felis) | C | ⭐ 186 | 2/22/2011 | PTP, Camera-specific layers to work with Arduino USB Host Shield |
 | [EngineY](https://github.com/timothyf/EngineY) | [@timothyf](https://github.com/timothyf) | Ruby | ⭐ 186 | 3/16/2011 | EngineY is an easy to use social network framework and portal implemented in Ruby on Rails that is e... |
@@ -498,8 +519,8 @@ Last update distribution by year:
 | [things-rb](https://github.com/haraldmartin/things-rb) | [@haraldmartin](https://github.com/haraldmartin) | Ruby | ⭐ 171 | 4/21/2011 | Ruby library & command line tool for accessing the backend of the Mac GTD app Things. |
 | [node-nltools](https://github.com/NaturalNode/node-nltools) | [@NaturalNode](https://github.com/NaturalNode) | JavaScript | ⭐ 171 | 8/29/2011 | Natural Language Tools |
 | [ruby-debug](https://github.com/mark-moseley/ruby-debug) | [@mark-moseley](https://github.com/mark-moseley) | Ruby | ⭐ 171 | 10/8/2011 | port of ruby-debug to Ruby 1.9 |
+| [mentoring](https://github.com/dianakimball/mentoring) | [@dianakimball](https://github.com/dianakimball) | N/A | ⭐ 171 | 3/17/2012 | The source of a distributed mentoring movement. |
 | [MTLabel](https://github.com/srgtuszy/MTLabel) | [@srgtuszy](https://github.com/srgtuszy) | Objective-C | ⭐ 170 | 2/28/2012 | A lightweight replacement for Apple's UILabel |
-| [mentoring](https://github.com/dianakimball/mentoring) | [@dianakimball](https://github.com/dianakimball) | N/A | ⭐ 170 | 3/17/2012 | The source of a distributed mentoring movement. |
 | [holygrail](https://github.com/mynyml/holygrail) | [@mynyml](https://github.com/mynyml) | Ruby | ⭐ 169 | 4/1/2010 | Harmony plugin for Ruby on Rails tests |
 | [sweet-justice](https://github.com/aristus/sweet-justice) | [@aristus](https://github.com/aristus) | JavaScript | ⭐ 169 | 9/21/2010 | Some pithy Javascript for beautiful justified text |
 | [node-wargames](https://github.com/mape/node-wargames) | [@mape](https://github.com/mape) | JavaScript | ⭐ 169 | 5/31/2011 | Visualization of an IRC channel in a wargame theme. |
@@ -636,12 +657,12 @@ Last update distribution by year:
 | [Massive-Coupon---Open-source-groupon-clone](https://github.com/robplatek/Massive-Coupon---Open-source-groupon-clone) | [@robplatek](https://github.com/robplatek) | JavaScript | ⭐ 143 | 12/22/2010 | Groupon / LivingSocial / Gilt Groupe clone |
 | [operational-transformation](https://github.com/fitzgen/operational-transformation) | [@fitzgen](https://github.com/fitzgen) | JavaScript | ⭐ 143 | 5/2/2011 | JavaScript implementation of Operational Transformation |
 | [llvm-clojure-bindings](https://github.com/jasonjckn/llvm-clojure-bindings) | [@jasonjckn](https://github.com/jasonjckn) | Clojure | ⭐ 143 | 7/4/2011 | LLVM Clojure Bindings and Toy Language. |
+| [star_](https://github.com/comex/star_) | [@comex](https://github.com/comex) | C | ⭐ 142 | 8/19/2011 | star and saffron |
 | [motion_tracking](https://github.com/dereks/motion_tracking) | [@dereks](https://github.com/dereks) | Python | ⭐ 142 | 9/27/2011 | An example of using OpenCV with Python to track motion in real time |
 | [LibGizmo](https://github.com/CedricGuillemet/LibGizmo) | [@CedricGuillemet](https://github.com/CedricGuillemet) | C++ | ⭐ 142 | 2/16/2012 | Gizmo control library for 3D object manipulation (4x4 matrix) |
 | [tcc](https://github.com/chaoslawful/tcc) | [@chaoslawful](https://github.com/chaoslawful) | C | ⭐ 141 | 6/27/2010 | track of Tiny C Compiler |
 | [growl4rails](https://github.com/jfiorato/growl4rails) | [@jfiorato](https://github.com/jfiorato) | JavaScript | ⭐ 141 | 12/15/2010 | A plugin for Growl-like functionality for Ruby on Rails applications built on Prototype and Scriptac... |
 | [sf-vegetarian-restaurants](https://github.com/mojombo/sf-vegetarian-restaurants) | [@mojombo](https://github.com/mojombo) | N/A | ⭐ 141 | 7/14/2011 | A list of awesome vegetarian-friendly restaurants in SF |
-| [star_](https://github.com/comex/star_) | [@comex](https://github.com/comex) | C | ⭐ 141 | 8/19/2011 | star and saffron |
 | [django-elasticsearch](https://github.com/aparo/django-elasticsearch) | [@aparo](https://github.com/aparo) | Python | ⭐ 141 | 9/3/2011 | Django ElasticSearch Backend |
 | [asciiflow](https://github.com/jprichardson/asciiflow) | [@jprichardson](https://github.com/jprichardson) | Java | ⭐ 141 | 11/23/2011 | ASCII diagrams and drawing on the web (GWT) |
 | [s4](https://github.com/s4/s4) | [@s4](https://github.com/s4) | Java | ⭐ 141 | 11/29/2011 | S4 repository |
@@ -745,12 +766,12 @@ Last update distribution by year:
 | [NodeDeploy](https://github.com/Miserlou/NodeDeploy) | [@Miserlou](https://github.com/Miserlou) | JavaScript | ⭐ 129 | 1/12/2012 | Example scripts for deploying a Node.js application behind a Node proxy alongside Apache/Nginx, as a... |
 | [gx](https://github.com/evanphx/gx) | [@evanphx](https://github.com/evanphx) | Ruby | ⭐ 129 | 1/14/2012 | A set of git tools |
 | [pygowave-legacy](https://github.com/p2k/pygowave-legacy) | [@p2k](https://github.com/p2k) | JavaScript | ⭐ 128 | 9/9/2010 | The Open Source Python Wave Client/Server solution (legacy version) |
+| [SoftFloat](https://github.com/CodesInChaos/SoftFloat) | [@CodesInChaos](https://github.com/CodesInChaos) | C# | ⭐ 128 | 7/15/2011 | An implementation of 32 bit floating point arithmetic in C# |
 | [Simple-RESS](https://github.com/mattstauffer/Simple-RESS) | [@mattstauffer](https://github.com/mattstauffer) | PHP | ⭐ 128 | 11/11/2011 | Allowing PHP to access device screen width for use in Lukew's RESS (Responsive Design + Server Side ... |
 | [munin-nginx-ubuntu](https://github.com/jnstq/munin-nginx-ubuntu) | [@jnstq](https://github.com/jnstq) | N/A | ⭐ 128 | 2/20/2012 | Simple steps to setup munin to monitor ubuntu server including nginx requests, memory and status |
 | [xVim](https://github.com/WarWithinMe/xVim) | [@WarWithinMe](https://github.com/WarWithinMe) | Objective-C | ⭐ 128 | 3/4/2012 | A SIMBL Plugin to provide Vim Key Binding for MacOSX editors. |
 | [mod_redis](https://github.com/sneakybeaky/mod_redis) | [@sneakybeaky](https://github.com/sneakybeaky) | C | ⭐ 128 | 4/7/2012 | An Apache HTTPD module for speaking to redis via HTTP |
 | [xcode-cappuccino](https://github.com/rbartolome/xcode-cappuccino) | [@rbartolome](https://github.com/rbartolome) | Shell | ⭐ 127 | 4/6/2011 | This project is no longer under active development. Here for historical reasons. |
-| [SoftFloat](https://github.com/CodesInChaos/SoftFloat) | [@CodesInChaos](https://github.com/CodesInChaos) | C# | ⭐ 127 | 7/15/2011 | An implementation of 32 bit floating point arithmetic in C# |
 | [livecss](https://github.com/ooyala/livecss) | [@ooyala](https://github.com/ooyala) | JavaScript | ⭐ 127 | 7/25/2011 | Making the browser dance to your CSS |
 | [mongomatic](https://github.com/benmyles/mongomatic) | [@benmyles](https://github.com/benmyles) | Ruby | ⭐ 127 | 8/2/2011 | Mongomatic is a simple Ruby object mapper for Mongo. |
 | [pyvcs](https://github.com/alex/pyvcs) | [@alex](https://github.com/alex) | Python | ⭐ 127 | 9/10/2011 | A pure python abstraction layer of multiple VCS, very lightweight. |
@@ -946,6 +967,7 @@ Last update distribution by year:
 | [hassle](https://github.com/pedro/hassle) | [@pedro](https://github.com/pedro) | Ruby | ⭐ 110 | 9/10/2011 | HTTP Caching SASS for your leisure (?) |
 | [Polygons](https://github.com/kizu/Polygons) | [@kizu](https://github.com/kizu) | N/A | ⭐ 110 | 10/28/2011 | True CSS3 convex polygons |
 | [jquery-mobile-android-theme](https://github.com/jjoe64/jquery-mobile-android-theme) | [@jjoe64](https://github.com/jjoe64) | JavaScript | ⭐ 110 | 3/29/2012 | This is a custom jquery mobile theme, that matches the Holo theme family in Android 4.0 Theme.Holo.D... |
+| [game-asset-loader](https://github.com/borismus/game-asset-loader) | [@borismus](https://github.com/borismus) | JavaScript | ⭐ 110 | 4/6/2012 | HTML5 Filesystem, offline capable loader for web game assets. |
 | [appengine-clj](https://github.com/duelinmarkers/appengine-clj) | [@duelinmarkers](https://github.com/duelinmarkers) | Clojure | ⭐ 109 | 2/13/2010 | Clojure library to make life on Google AppEngine clean and easy |
 | [denied](https://github.com/denied/denied) | [@denied](https://github.com/denied) | Python | ⭐ 109 | 4/2/2010 | the totally denied python microframework for scaling enthusiasts |
 | [TaskList.vim](https://github.com/vim-scripts/TaskList.vim) | [@vim-scripts](https://github.com/vim-scripts) | VimL | ⭐ 109 | 10/19/2010 | Eclipse like task list |
@@ -965,7 +987,6 @@ Last update distribution by year:
 | [CodeBook](https://github.com/danielchasehooper/CodeBook) | [@danielchasehooper](https://github.com/danielchasehooper) | JavaScript | ⭐ 109 | 3/20/2012 | An interactive code editor |
 | [dialect](https://github.com/masylum/dialect) | [@masylum](https://github.com/masylum) | JavaScript | ⭐ 109 | 3/22/2012 | Translations for nodejs |
 | [noexec](https://github.com/joshbuddy/noexec) | [@joshbuddy](https://github.com/joshbuddy) | Ruby | ⭐ 109 | 4/3/2012 | NO MORE BUNDLE EXEC |
-| [game-asset-loader](https://github.com/borismus/game-asset-loader) | [@borismus](https://github.com/borismus) | JavaScript | ⭐ 109 | 4/6/2012 | HTML5 Filesystem, offline capable loader for web game assets. |
 | [google_closure_compiler](https://github.com/mkelly12/google_closure_compiler) | [@mkelly12](https://github.com/mkelly12) | Python | ⭐ 108 | 1/6/2010 | Ruby on Rails plugin for shrinking JavaScript assets using the Google Closure Compiler |
 | [findbyemail](https://github.com/petewarden/findbyemail) | [@petewarden](https://github.com/petewarden) | PHP | ⭐ 108 | 2/15/2010 | A PHP module that incorporates all known APIs that map an email address to user information |
 | [taskr](https://github.com/jchris/taskr) | [@jchris](https://github.com/jchris) | JavaScript | ⭐ 108 | 6/14/2010 | lightweight realtime task tracking as a CouchApp |
@@ -1115,7 +1136,7 @@ Based on the analysis of these repositories:
 This report was automatically generated by [Old Repository Finder](https://github.com/your-username/old-repo-finder). It searches for GitHub repositories that haven't been updated in a specified time period.
 
 **Report Metadata:**
-- Generated on: Tue, 11 Feb 2025 18:08:18 GMT
+- Generated on: Thu, 13 Feb 2025 11:30:11 GMT
 - Search Parameters:
   - Year Range: 2010-2012
   - Minimum Stars: 100
