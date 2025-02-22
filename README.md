@@ -2,9 +2,6 @@
 
 A powerful tool to discover and analyze historical GitHub repositories.
 
-> [!INFO]
-> this is made possible with the help of AI. 
-
 ## Features
 
 - 🔍 Find repositories from specific time periods
