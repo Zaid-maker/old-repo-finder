@@ -7,49 +7,34 @@ import { ICacheService } from './interfaces/cache.interface';
 import { IGitService } from './interfaces/git.interface';
 import { IHistoricalService } from './interfaces/historical.interface';
 import { IMarkdownService } from './interfaces/markdown.interface';
-import { LoggerService } from './services/logger.service';
-import { ConfigService } from './services/config.service';
 import { IMonitoringService } from './interfaces/monitoring.interface';
+import { IErrorHandler } from './services/error-handler.service';
 
 export class Application {
-    private static container = ServiceContainer.getInstance();
-    private static logger: ILogger;
-    private static config: IConfigService;
-    private static github: IGitHubService;
-    private static cache: ICacheService;
-    private static git: IGitService;
-    private static historical: IHistoricalService;
-    private static markdown: IMarkdownService;
-    private static monitoring: IMonitoringService;
+    constructor(
+        private readonly logger: ILogger,
+        private readonly config: IConfigService,
+        private readonly github: IGitHubService,
+        private readonly cache: ICacheService,
+        private readonly git: IGitService,
+        private readonly historical: IHistoricalService,
+        private readonly markdown: IMarkdownService,
+        private readonly monitoring: IMonitoringService,
+        private readonly errorHandler: IErrorHandler
+    ) {}
 
-    private static initializeServices(): void {
-        // Initialize base services
-        this.container.register(ServiceContainer.TOKENS.Logger, new LoggerService());
-        this.container.register(ServiceContainer.TOKENS.Config, new ConfigService());
-
-        // Get service instances
-        this.logger = this.container.get(ServiceContainer.TOKENS.Logger);
-        this.config = this.container.get(ServiceContainer.TOKENS.Config);
-        this.github = this.container.get(ServiceContainer.TOKENS.GitHub);
-        this.cache = this.container.get(ServiceContainer.TOKENS.Cache);
-        this.git = this.container.get(ServiceContainer.TOKENS.Git);
-        this.historical = this.container.get(ServiceContainer.TOKENS.Historical);
-        this.markdown = this.container.get(ServiceContainer.TOKENS.Markdown);
-        this.monitoring = this.container.get(ServiceContainer.TOKENS.Monitoring);
-    }
-
-    private static async validateSetup(): Promise<void> {
+    private async validateSetup(): Promise<void> {
         this.monitoring.startOperation('validate_setup');
         this.logger.info('Validating setup...');
         
         if (!this.config.validate()) {
             this.monitoring.endOperation('validate_setup');
-            this.logger.fatal('Configuration validation failed');
+            this.errorHandler.handleFatalError(new Error('Configuration validation failed'), 'Setup validation');
         }
         this.monitoring.endOperation('validate_setup');
     }
 
-    private static async fetchRepositories(): Promise<Repository[]> {
+    private async fetchRepositories(): Promise<Repository[]> {
         const repos: Repository[] = [];
         const options = this.config.options;
 
@@ -131,7 +116,7 @@ export class Application {
         return repos;
     }
 
-    private static async generateAndSaveReport(repos: Repository[]): Promise<void> {
+    private async generateAndSaveReport(repos: Repository[]): Promise<void> {
         this.monitoring.startOperation('generate_report');
         try {
             const comparison = await this.historical.compareWithPrevious(repos);
@@ -163,15 +148,11 @@ export class Application {
         }
     }
 
-    static async run(): Promise<void> {
+    async run(): Promise<void> {
         this.monitoring.startOperation('full_execution');
         this.logger.info('Starting Old Repository Finder...');
         
         try {
-            // Initialize services
-            this.initializeServices();
-            
-            // Parse command line arguments and validate setup
             await this.validateSetup();
             
             // Show configuration
@@ -211,9 +192,24 @@ export class Application {
             this.logger.debug('Performance metrics:', Object.fromEntries(performanceStats));
             this.monitoring.logResourceUsage();
         } catch (error) {
-            this.logger.fatal('Application error:', error);
+            this.errorHandler.handleFatalError(error, 'Application execution');
         } finally {
             this.monitoring.endOperation('full_execution');
         }
+    }
+
+    static create(): Application {
+        const container = ServiceContainer.getInstance();
+        return new Application(
+            container.get(ServiceContainer.TOKENS.Logger),
+            container.get(ServiceContainer.TOKENS.Config),
+            container.get(ServiceContainer.TOKENS.GitHub),
+            container.get(ServiceContainer.TOKENS.Cache),
+            container.get(ServiceContainer.TOKENS.Git),
+            container.get(ServiceContainer.TOKENS.Historical),
+            container.get(ServiceContainer.TOKENS.Markdown),
+            container.get(ServiceContainer.TOKENS.Monitoring),
+            container.get(ServiceContainer.TOKENS.ErrorHandler)
+        );
     }
 }
