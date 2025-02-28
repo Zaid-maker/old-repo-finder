@@ -1,23 +1,12 @@
 import { ILogger } from '../interfaces/logger.interface';
-import { ServiceContainer } from './service-container';
-
-export interface IMonitoringService {
-    startOperation(name: string): void;
-    endOperation(name: string): void;
-    getOperationStats(): Map<string, { count: number; totalTime: number; avgTime: number }>;
-    getMemoryUsage(): { heapUsed: number; heapTotal: number; external: number; };
-    logResourceUsage(): void;
-    resetStats(): void;
-}
+import { IMonitoringService } from '../interfaces/monitoring.interface';
 
 export class MonitoringService implements IMonitoringService {
-    private readonly logger: ILogger;
     private operations: Map<string, { startTime: number; count: number; totalTime: number }>;
     private readonly startTime: number;
     private lastResourceLog: number;
 
-    constructor() {
-        this.logger = ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger);
+    constructor(private readonly logger: ILogger) {
         this.operations = new Map();
         this.startTime = Date.now();
         this.lastResourceLog = Date.now();
