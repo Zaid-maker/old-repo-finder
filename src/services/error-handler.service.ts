@@ -1,5 +1,4 @@
 import { ILogger } from '../interfaces/logger.interface';
-import { ServiceContainer } from './service-container';
 
 export interface IErrorHandler {
     handleError(error: unknown, context: string): void;
@@ -27,9 +26,3 @@ export class ErrorHandlerService implements IErrorHandler {
         process.exit(1);
     }
 }
-
-// Register the error handler service
-ServiceContainer.getInstance().register(
-    'ErrorHandler',
-    new ErrorHandlerService(ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger))
-);
