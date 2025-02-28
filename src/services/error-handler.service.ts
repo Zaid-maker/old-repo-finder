@@ -7,11 +7,7 @@ export interface IErrorHandler {
 }
 
 export class ErrorHandlerService implements IErrorHandler {
-    private readonly logger: ILogger;
-
-    constructor() {
-        this.logger = ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger);
-    }
+    constructor(private readonly logger: ILogger) {}
 
     private formatError(error: unknown): string {
         if (error instanceof Error) {
@@ -35,5 +31,5 @@ export class ErrorHandlerService implements IErrorHandler {
 // Register the error handler service
 ServiceContainer.getInstance().register(
     'ErrorHandler',
-    new ErrorHandlerService()
+    new ErrorHandlerService(ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger))
 );

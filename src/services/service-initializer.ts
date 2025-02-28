@@ -22,51 +22,71 @@ export class ServiceInitializer {
             return;
         }
 
-        // Initialize core services first (no dependencies)
-        this.container.register(ServiceContainer.TOKENS.Logger, new LoggerService());
-        this.container.register(ServiceContainer.TOKENS.ErrorHandler, new ErrorHandlerService());
-        this.container.register(ServiceContainer.TOKENS.ProcessManager, new ProcessManagerService());
-        this.container.register(ServiceContainer.TOKENS.Monitoring, new MonitoringService());
-        this.container.register(ServiceContainer.TOKENS.Validation, new ValidationService());
-
-        const monitoring = this.container.get<MonitoringService>(ServiceContainer.TOKENS.Monitoring);
-        monitoring.startOperation('service_initialization');
-
         try {
-            // Initialize parameter management (depends on Logger, Validation)
-            const parameterManager = new ParameterManagerService();
-            await parameterManager.initialize(args);
-            this.container.register(ServiceContainer.TOKENS.ParameterManager, parameterManager);
+            // Initialize logger first as it's required by other services
+            const logger = new LoggerService();
+            this.container.register(ServiceContainer.TOKENS.Logger, logger);
 
-            // Initialize configuration service (depends on ParameterManager)
-            this.container.register(ServiceContainer.TOKENS.Config, new ConfigService());
+            // Initialize core services with explicit logger dependency
+            const errorHandler = new ErrorHandlerService(logger);
+            const processManager = new ProcessManagerService(logger);
+            const monitoring = new MonitoringService(logger);
+            const validation = new ValidationService(logger);
 
-            // Initialize supporting services
-            this.container.register(ServiceContainer.TOKENS.RateLimiter, new RateLimiterService());
-            this.container.register(ServiceContainer.TOKENS.RetryPolicy, new RetryPolicyService());
-            this.container.register(ServiceContainer.TOKENS.Cache, new CacheService());
+            this.container.register(ServiceContainer.TOKENS.ErrorHandler, errorHandler);
+            this.container.register(ServiceContainer.TOKENS.ProcessManager, processManager);
+            this.container.register(ServiceContainer.TOKENS.Monitoring, monitoring);
+            this.container.register(ServiceContainer.TOKENS.Validation, validation);
 
-            // Initialize main services
-            this.container.register(ServiceContainer.TOKENS.GitHub, new GitHubService());
-            this.container.register(ServiceContainer.TOKENS.Git, new GitService());
-            this.container.register(ServiceContainer.TOKENS.Historical, new HistoricalService());
-            this.container.register(ServiceContainer.TOKENS.Markdown, new MarkdownService());
+            monitoring.startOperation('service_initialization');
 
-            // Validate all services are properly registered
-            this.validateServiceRegistration();
+            try {
+                // Initialize parameter management
+                const parameterManager = new ParameterManagerService(logger, validation);
+                await parameterManager.initialize(args);
+                this.container.register(ServiceContainer.TOKENS.ParameterManager, parameterManager);
 
-            // Initialize process manager handlers
-            const processManager = this.container.get<ProcessManagerService>(ServiceContainer.TOKENS.ProcessManager);
-            processManager.initialize();
+                // Initialize configuration service
+                const config = new ConfigService(logger);
+                this.container.register(ServiceContainer.TOKENS.Config, config);
 
-            // Mark container as initialized
-            this.container.markAsInitialized();
+                // Initialize supporting services
+                const rateLimiter = new RateLimiterService(logger);
+                const retryPolicy = new RetryPolicyService(logger);
+                const cache = new CacheService(logger, config);
 
-            monitoring.endOperation('service_initialization');
+                this.container.register(ServiceContainer.TOKENS.RateLimiter, rateLimiter);
+                this.container.register(ServiceContainer.TOKENS.RetryPolicy, retryPolicy);
+                this.container.register(ServiceContainer.TOKENS.Cache, cache);
+
+                // Initialize main services
+                const github = new GitHubService(logger, config, rateLimiter, retryPolicy);
+                const git = new GitService(logger);
+                const historical = new HistoricalService(logger, config);
+                const markdown = new MarkdownService(logger);
+
+                this.container.register(ServiceContainer.TOKENS.GitHub, github);
+                this.container.register(ServiceContainer.TOKENS.Git, git);
+                this.container.register(ServiceContainer.TOKENS.Historical, historical);
+                this.container.register(ServiceContainer.TOKENS.Markdown, markdown);
+
+                // Validate all services are properly registered
+                this.validateServiceRegistration();
+
+                // Initialize process manager handlers
+                processManager.initialize();
+
+                // Mark container as initialized
+                this.container.markAsInitialized();
+
+                monitoring.endOperation('service_initialization');
+            } catch (error) {
+                monitoring.endOperation('service_initialization');
+                errorHandler.handleFatalError(error, 'Service initialization');
+            }
         } catch (error) {
-            monitoring.endOperation('service_initialization');
-            const errorHandler = this.container.get<ErrorHandlerService>(ServiceContainer.TOKENS.ErrorHandler);
-            errorHandler.handleFatalError(error, 'Service initialization');
+            console.error('Fatal error during core service initialization:', error);
+            process.exit(1);
         }
     }
 
@@ -83,20 +103,21 @@ export class ServiceInitializer {
 
     static async shutdown(): Promise<void> {
         const monitoring = this.container.get<MonitoringService>(ServiceContainer.TOKENS.Monitoring);
+        const errorHandler = this.container.get<ErrorHandlerService>(ServiceContainer.TOKENS.ErrorHandler);
+        const processManager = this.container.get<ProcessManagerService>(ServiceContainer.TOKENS.ProcessManager);
+        const logger = this.container.get<LoggerService>(ServiceContainer.TOKENS.Logger);
+
         monitoring.startOperation('service_shutdown');
 
         try {
-            const processManager = this.container.get<ProcessManagerService>(ServiceContainer.TOKENS.ProcessManager);
             await processManager.handleShutdown();
-
-            // Clear the container
             this.container.clear();
-
             monitoring.endOperation('service_shutdown');
             monitoring.logResourceUsage();
         } catch (error) {
-            const errorHandler = this.container.get<ErrorHandlerService>(ServiceContainer.TOKENS.ErrorHandler);
             errorHandler.handleError(error, 'Service shutdown');
+        } finally {
+            logger.info('Service shutdown complete');
         }
     }
 }
