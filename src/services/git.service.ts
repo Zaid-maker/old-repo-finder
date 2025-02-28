@@ -2,6 +2,7 @@ import { IGitService } from '../interfaces/git.interface';
 import { ILogger } from '../interfaces/logger.interface';
 import { ServiceContainer } from './service-container';
 import { GitError } from '../utils/errors';
+import { withRetry, withTimeout, withMonitoring } from '../utils/decorators';
 
 export class GitService implements IGitService {
     private readonly logger: ILogger;
@@ -10,6 +11,8 @@ export class GitService implements IGitService {
         this.logger = ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger);
     }
 
+    @withMonitoring('git_command')
+    @withTimeout(10000) // 10 second timeout for Git commands
     private async executeGitCommand(command: string[]): Promise<{ success: boolean; output: string }> {
         try {
             const process = Bun.spawn(command, {
@@ -37,6 +40,8 @@ export class GitService implements IGitService {
         }
     }
 
+    @withMonitoring('git_check_changes')
+    @withRetry('check_changes')
     async checkChanges(): Promise<boolean> {
         try {
             const { output } = await this.executeGitCommand(["git", "status", "--porcelain"]);
@@ -47,6 +52,8 @@ export class GitService implements IGitService {
         }
     }
 
+    @withMonitoring('git_commit_and_push')
+    @withRetry('commit_and_push')
     async commitAndPush(filePath: string, message: string): Promise<boolean> {
         try {
             this.logger.debug('Checking for changes...');
@@ -83,6 +90,8 @@ export class GitService implements IGitService {
         }
     }
 
+    @withMonitoring('git_get_branch')
+    @withRetry('get_current_branch')
     async getCurrentBranch(): Promise<string> {
         try {
             const { output } = await this.executeGitCommand(["git", "rev-parse", "--abbrev-ref", "HEAD"]);
@@ -93,6 +102,8 @@ export class GitService implements IGitService {
         }
     }
 
+    @withMonitoring('git_check_remote')
+    @withRetry('has_remote_changes')
     async hasRemoteChanges(): Promise<boolean> {
         try {
             // Fetch latest changes
@@ -108,6 +119,8 @@ export class GitService implements IGitService {
         }
     }
 
+    @withMonitoring('git_pull')
+    @withRetry('pull')
     async pull(): Promise<boolean> {
         try {
             await this.executeGitCommand(["git", "pull"]);
@@ -118,6 +131,7 @@ export class GitService implements IGitService {
         }
     }
 
+    @withMonitoring('git_check_repo')
     async isGitRepo(): Promise<boolean> {
         try {
             await this.executeGitCommand(["git", "rev-parse", "--git-dir"]);
