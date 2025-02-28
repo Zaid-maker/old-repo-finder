@@ -17,8 +17,9 @@ async function main() {
         // Start monitoring application execution
         monitoring.startOperation('app_execution');
 
-        // Run the application
-        await Application.run();
+        // Create and run the application
+        const app = Application.create();
+        await app.run();
 
         // Log final metrics
         monitoring.endOperation('app_execution');
@@ -47,4 +48,8 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Start the application
-main();
+main().catch(error => {
+    const container = ServiceContainer.getInstance();
+    const errorHandler = container.get<IErrorHandler>(ServiceContainer.TOKENS.ErrorHandler);
+    errorHandler.handleFatalError(error, 'Application startup');
+});
