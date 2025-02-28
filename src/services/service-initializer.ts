@@ -16,62 +16,62 @@ import { ValidationService } from './validation.service';
 
 export class ServiceInitializer {
     private static container = ServiceContainer.getInstance();
+    private static logger: LoggerService;
 
     static async initialize(args: string[]): Promise<void> {
         if (this.container.isInitialized()) {
             return;
         }
 
-        // Create and register the logger first as it's required by other services
-        const logger = LoggerService.getInstance();
-        
-        // Enable debug mode if --debug flag is present
-        if (args.includes('--debug')) {
-            logger.enableDebug();
-        }
-
-        this.container.register(ServiceContainer.TOKENS.Logger, logger);
-
         try {
-            // Create core services with explicit logger dependency
-            const errorHandler = new ErrorHandlerService(logger);
+            // Initialize core services
+            this.logger = LoggerService.getInstance();
+            
+            // Enable debug mode if --debug flag is present
+            if (args.includes('--debug')) {
+                this.logger.enableDebug();
+            }
+
+            // Register core services
+            this.container.register(ServiceContainer.TOKENS.Logger, this.logger);
+
+            // Create and register services with explicit dependencies
+            const errorHandler = new ErrorHandlerService(this.logger);
+            const processManager = new ProcessManagerService(this.logger);
+            const monitoring = new MonitoringService(this.logger);
+            const validation = new ValidationService(this.logger);
+
             this.container.register(ServiceContainer.TOKENS.ErrorHandler, errorHandler);
-
-            const processManager = new ProcessManagerService(logger);
             this.container.register(ServiceContainer.TOKENS.ProcessManager, processManager);
-
-            const monitoring = new MonitoringService(logger);
             this.container.register(ServiceContainer.TOKENS.Monitoring, monitoring);
-
-            const validation = new ValidationService(logger);
             this.container.register(ServiceContainer.TOKENS.Validation, validation);
 
             monitoring.startOperation('service_initialization');
 
             try {
-                // Initialize parameter management
-                const parameterManager = new ParameterManagerService();
+                // Create and configure parameter manager
+                const parameterManager = new ParameterManagerService(this.logger, validation);
                 await parameterManager.initialize(args);
                 this.container.register(ServiceContainer.TOKENS.ParameterManager, parameterManager);
 
-                // Initialize configuration service
-                const config = new ConfigService();
+                // Create configuration service
+                const config = new ConfigService(this.logger, parameterManager);
                 this.container.register(ServiceContainer.TOKENS.Config, config);
 
-                // Initialize supporting services
-                const rateLimiter = new RateLimiterService();
-                const retryPolicy = new RetryPolicyService();
-                const cache = new CacheService();
+                // Create support services
+                const rateLimiter = new RateLimiterService(this.logger);
+                const retryPolicy = new RetryPolicyService(this.logger);
+                const cache = new CacheService(this.logger, config);
 
                 this.container.register(ServiceContainer.TOKENS.RateLimiter, rateLimiter);
                 this.container.register(ServiceContainer.TOKENS.RetryPolicy, retryPolicy);
                 this.container.register(ServiceContainer.TOKENS.Cache, cache);
 
-                // Initialize main services
-                const github = new GitHubService();
-                const git = new GitService();
-                const historical = new HistoricalService();
-                const markdown = new MarkdownService();
+                // Create main services
+                const github = new GitHubService(this.logger, config, rateLimiter, retryPolicy);
+                const git = new GitService(this.logger);
+                const historical = new HistoricalService(this.logger, config);
+                const markdown = new MarkdownService(this.logger);
 
                 this.container.register(ServiceContainer.TOKENS.GitHub, github);
                 this.container.register(ServiceContainer.TOKENS.Git, git);
@@ -88,13 +88,17 @@ export class ServiceInitializer {
                 this.container.markAsInitialized();
 
                 monitoring.endOperation('service_initialization');
-                logger.info('Services initialized successfully');
+                this.logger.info('Services initialized successfully');
             } catch (error) {
                 monitoring.endOperation('service_initialization');
                 errorHandler.handleFatalError(error, 'Service initialization');
             }
         } catch (error) {
-            logger.fatal('Fatal error during core service initialization:', error);
+            if (this.logger) {
+                this.logger.fatal('Fatal error during core service initialization:', error);
+            } else {
+                console.error('Fatal error during logger initialization:', error);
+            }
             process.exit(1);
         }
     }
@@ -111,8 +115,6 @@ export class ServiceInitializer {
     }
 
     static async shutdown(): Promise<void> {
-        const logger = LoggerService.getInstance();
-        
         try {
             const monitoring = this.container.get<MonitoringService>(ServiceContainer.TOKENS.Monitoring);
             const processManager = this.container.get<ProcessManagerService>(ServiceContainer.TOKENS.ProcessManager);
@@ -125,9 +127,9 @@ export class ServiceInitializer {
             monitoring.endOperation('service_shutdown');
             monitoring.logResourceUsage();
             
-            logger.info('Service shutdown complete');
+            this.logger.info('Service shutdown complete');
         } catch (error) {
-            logger.error('Error during shutdown:', error);
+            this.logger.error('Error during shutdown:', error);
         }
     }
 }

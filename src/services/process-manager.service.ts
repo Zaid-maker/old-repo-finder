@@ -7,67 +7,48 @@ export interface IProcessManager {
     initialize(): void;
 }
 
+type ShutdownHandler = () => Promise<void>;
+
 export class ProcessManagerService implements IProcessManager {
-    private readonly logger: ILogger;
-    private shutdownHandlers: Array<() => Promise<void>> = [];
+    private shutdownHandlers: ShutdownHandler[] = [];
     private isShuttingDown = false;
 
-    constructor() {
-        this.logger = ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger);
+    constructor(private readonly logger: ILogger) {}
+
+    initialize(): void {
+        process.on('SIGINT', () => this.handleShutdown('SIGINT'));
+        process.on('SIGTERM', () => this.handleShutdown('SIGTERM'));
+        process.on('beforeExit', () => this.handleShutdown('beforeExit'));
+
+        this.logger.debug('Process manager initialized');
     }
 
-    async handleShutdown(): Promise<void> {
-        if (this.isShuttingDown) return;
-        this.isShuttingDown = true;
+    registerShutdownHandler(handler: ShutdownHandler): void {
+        this.shutdownHandlers.push(handler);
+        this.logger.debug('Shutdown handler registered');
+    }
 
-        this.logger.info('Graceful shutdown initiated...');
+    async handleShutdown(signal?: string): Promise<void> {
+        if (this.isShuttingDown) {
+            return;
+        }
+
+        this.isShuttingDown = true;
+        this.logger.info(`Initiating shutdown${signal ? ` (signal: ${signal})` : ''}...`);
 
         try {
             for (const handler of this.shutdownHandlers) {
                 await handler();
             }
-            this.logger.info('Graceful shutdown completed');
-            process.exit(0);
+            this.logger.info('Shutdown handlers executed successfully');
         } catch (error) {
             this.logger.error('Error during shutdown:', error);
-            process.exit(1);
         }
-    }
-
-    registerShutdownHandler(handler: () => Promise<void>): void {
-        this.shutdownHandlers.push(handler);
-    }
-
-    initialize(): void {
-        // Handle process signals
-        process.on('SIGTERM', () => {
-            this.logger.info('Received SIGTERM signal');
-            this.handleShutdown();
-        });
-
-        process.on('SIGINT', () => {
-            this.logger.info('Received SIGINT signal');
-            this.handleShutdown();
-        });
-
-        // Handle uncaught exceptions
-        process.on('uncaughtException', (error) => {
-            this.logger.error('Uncaught Exception:', error);
-            this.handleShutdown();
-        });
-
-        // Handle unhandled promise rejections
-        process.on('unhandledRejection', (reason) => {
-            this.logger.error('Unhandled Promise Rejection:', reason);
-            this.handleShutdown();
-        });
-
-        this.logger.debug('Process manager initialized');
     }
 }
 
 // Register the process manager service
 ServiceContainer.getInstance().register(
     'ProcessManager',
-    new ProcessManagerService()
+    new ProcessManagerService(ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger))
 );

@@ -1,150 +1,102 @@
-import { Options } from '../types';
 import { IConfigService } from '../interfaces/config.interface';
 import { ILogger } from '../interfaces/logger.interface';
-import { ServiceContainer } from './service-container';
+import { IParameterManager } from '../interfaces/parameter-manager.interface';
+import { Options } from '../types';
+import { ConfigurationError } from '../utils/errors';
 
 export class ConfigService implements IConfigService {
-    private _options: Options;
-    private _githubToken: string;
-    private _resultFile: string;
-    private _historicalFile: string;
-    private _cacheDuration: number;
-    private _requestTimeout: number;
-    private readonly logger: ILogger;
+    private options: Options;
+    private githubToken: string;
+    private resultFile: string;
+    private historicalFile: string;
+    private cacheDuration: number;
+    private requestTimeout: number;
 
-    constructor() {
-        this.logger = ServiceContainer.getInstance().get<ILogger>(ServiceContainer.TOKENS.Logger);
-        
-        // Set default values
-        this._options = {
-            minStars: 0,
-            maxRepos: 1000,
-            concurrency: 3,
-            yearStart: 2008,
-            yearEnd: 2013,
-            autoPush: false,
-            debug: false
-        };
+    constructor(
+        private readonly logger: ILogger,
+        private readonly parameterManager: IParameterManager
+    ) {
+        this.loadConfig();
+    }
 
-        this._resultFile = "old-repos.md";
-        this._historicalFile = "historical-data.json";
-        this._cacheDuration = 3600000; // 1 hour
-        this._requestTimeout = 30000;   // 30 seconds
-        
-        this.loadEnvConfig();
+    private loadConfig(): void {
+        try {
+            const envConfig = this.parameterManager.getEnvironmentConfig();
+            this.options = this.parameterManager.getOptions();
+            
+            this.githubToken = envConfig.githubToken;
+            this.resultFile = envConfig.resultFile;
+            this.historicalFile = envConfig.historicalFile;
+            this.cacheDuration = envConfig.cacheDuration;
+            this.requestTimeout = envConfig.requestTimeout;
+
+            this.logger.debug('Configuration loaded:', {
+                resultFile: this.resultFile,
+                historicalFile: this.historicalFile,
+                cacheDuration: this.cacheDuration,
+                requestTimeout: this.requestTimeout,
+                options: this.options
+            });
+        } catch (error) {
+            throw new ConfigurationError(
+                `Failed to load configuration: ${error instanceof Error ? error.message : String(error)}`
+            );
+        }
     }
 
     get githubToken(): string {
-        if (!this._githubToken) {
-            throw new Error('GitHub token not configured');
-        }
-        return this._githubToken;
+        return this.githubToken;
     }
 
     get resultFile(): string {
-        return this._resultFile;
+        return this.resultFile;
     }
 
     get historicalFile(): string {
-        return this._historicalFile;
+        return this.historicalFile;
     }
 
     get cacheDuration(): number {
-        return this._cacheDuration;
+        return this.cacheDuration;
     }
 
     get requestTimeout(): number {
-        return this._requestTimeout;
+        return this.requestTimeout;
     }
 
     get options(): Options {
-        return { ...this._options };
+        return { ...this.options };
     }
 
     updateOptions(options: Partial<Options>): void {
-        this._options = {
-            ...this._options,
+        this.options = {
+            ...this.options,
             ...options
         };
-        this.logger.debug('Updated options:', this._options);
-    }
-
-    loadEnvConfig(): void {
-        try {
-            // Load GitHub token
-            this._githubToken = process.env.GITHUB_TOKEN || '';
-            
-            // Load optional configurations
-            if (process.env.RESULT_FILE) {
-                this._resultFile = process.env.RESULT_FILE;
-            }
-
-            if (process.env.HISTORICAL_FILE) {
-                this._historicalFile = process.env.HISTORICAL_FILE;
-            }
-
-            if (process.env.CACHE_DURATION) {
-                const duration = parseInt(process.env.CACHE_DURATION);
-                if (!isNaN(duration)) {
-                    this._cacheDuration = duration;
-                }
-            }
-
-            if (process.env.REQUEST_TIMEOUT) {
-                const timeout = parseInt(process.env.REQUEST_TIMEOUT);
-                if (!isNaN(timeout)) {
-                    this._requestTimeout = timeout;
-                }
-            }
-
-            // Load debug mode from environment
-            if (process.env.DEBUG === 'true') {
-                this._options.debug = true;
-            }
-
-            this.logger.debug('Environment configuration loaded');
-        } catch (error) {
-            this.logger.error('Failed to load environment configuration:', error);
-            throw error;
-        }
+        this.logger.debug('Options updated:', this.options);
     }
 
     validate(): boolean {
-        try {
-            if (!this._githubToken) {
-                this.logger.error('GitHub token is required');
-                return false;
-            }
-
-            if (this._options.yearStart > this._options.yearEnd) {
-                this.logger.error('Start year must be less than or equal to end year');
-                return false;
-            }
-
-            if (this._options.yearStart < 2008) {
-                this.logger.error('Start year cannot be earlier than 2008');
-                return false;
-            }
-
-            if (this._options.minStars < 0) {
-                this.logger.error('Minimum stars cannot be negative');
-                return false;
-            }
-
-            if (this._options.maxRepos <= 0) {
-                this.logger.error('Maximum repositories must be greater than 0');
-                return false;
-            }
-
-            if (this._options.concurrency <= 0 || this._options.concurrency > 5) {
-                this.logger.error('Concurrency must be between 1 and 5');
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            this.logger.error('Configuration validation failed:', error);
+        if (!this.githubToken) {
+            this.logger.error('GitHub token is not set');
             return false;
         }
+
+        if (this.options.yearStart > this.options.yearEnd) {
+            this.logger.error('Start year cannot be after end year');
+            return false;
+        }
+
+        if (this.options.yearStart < 2008) {
+            this.logger.error('Start year cannot be before 2008');
+            return false;
+        }
+
+        if (this.options.concurrency < 1 || this.options.concurrency > 5) {
+            this.logger.error('Concurrency must be between 1 and 5');
+            return false;
+        }
+
+        return true;
     }
 }
