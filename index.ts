@@ -1,60 +1,50 @@
 #!/usr/bin/env bun
 
 import { Application } from './src/application';
+import { ServiceInitializer } from './src/services/service-initializer';
 import { ServiceContainer } from './src/services/service-container';
-import { ProcessManagerService } from './src/services/process-manager.service';
-import { LoggerService } from './src/services/logger.service';
-import { ConfigService } from './src/services/config.service';
-import { GitHubService } from './src/services/github.service';
-import { CacheService } from './src/services/cache.service';
-import { GitService } from './src/services/git.service';
-import { HistoricalService } from './src/services/historical.service';
-import { MarkdownService } from './src/services/markdown.service';
-import { ErrorHandlerService } from './src/services/error-handler.service';
-import { MonitoringService } from './src/services/monitoring.service';
+import { IMonitoringService } from './src/interfaces/monitoring.interface';
+import { IErrorHandler } from './src/services/error-handler.service';
 
-// Initialize service container
+async function main() {
+    // Initialize all services
+    await ServiceInitializer.initialize(process.argv.slice(2));
+
+    const container = ServiceContainer.getInstance();
+    const monitoring = container.get<IMonitoringService>(ServiceContainer.TOKENS.Monitoring);
+
+    try {
+        // Start monitoring application execution
+        monitoring.startOperation('app_execution');
+
+        // Run the application
+        await Application.run();
+
+        // Log final metrics
+        monitoring.endOperation('app_execution');
+        monitoring.logResourceUsage();
+
+        // Perform graceful shutdown
+        await ServiceInitializer.shutdown();
+        process.exit(0);
+    } catch (error) {
+        monitoring.endOperation('app_execution');
+        const errorHandler = container.get<IErrorHandler>(ServiceContainer.TOKENS.ErrorHandler);
+        errorHandler.handleFatalError(error, 'Application execution');
+    }
+}
+
+// Handle uncaught exceptions and unhandled rejections through our error handler
 const container = ServiceContainer.getInstance();
-
-// Register core services
-container.register(ServiceContainer.TOKENS.Logger, new LoggerService());
-container.register(ServiceContainer.TOKENS.Config, new ConfigService());
-container.register(ServiceContainer.TOKENS.GitHub, new GitHubService());
-container.register(ServiceContainer.TOKENS.Cache, new CacheService());
-container.register(ServiceContainer.TOKENS.Git, new GitService());
-container.register(ServiceContainer.TOKENS.Historical, new HistoricalService());
-container.register(ServiceContainer.TOKENS.Markdown, new MarkdownService());
-container.register(ServiceContainer.TOKENS.Monitoring, new MonitoringService());
-container.register(ServiceContainer.TOKENS.ErrorHandler, new ErrorHandlerService());
-container.register(ServiceContainer.TOKENS.ProcessManager, new ProcessManagerService());
-
-// Initialize process manager
-const processManager = container.get<ProcessManagerService>(ServiceContainer.TOKENS.ProcessManager);
-processManager.initialize();
-
-// Get monitoring service
-const monitoring = container.get<MonitoringService>(ServiceContainer.TOKENS.Monitoring);
-
-// Register cleanup handlers
-processManager.registerShutdownHandler(async () => {
-    const cache = container.get<CacheService>(ServiceContainer.TOKENS.Cache);
-    monitoring.startOperation('cleanup');
-    cache.clearExpired();
-    monitoring.endOperation('cleanup');
-    monitoring.logResourceUsage();
+process.on('uncaughtException', (error) => {
+    const errorHandler = container.get<IErrorHandler>(ServiceContainer.TOKENS.ErrorHandler);
+    errorHandler.handleFatalError(error, 'Uncaught Exception');
 });
 
-// Start monitoring application startup
-monitoring.startOperation('app_startup');
+process.on('unhandledRejection', (reason) => {
+    const errorHandler = container.get<IErrorHandler>(ServiceContainer.TOKENS.ErrorHandler);
+    errorHandler.handleFatalError(reason, 'Unhandled Promise Rejection');
+});
 
 // Start the application
-Application.run()
-    .then(() => {
-        monitoring.endOperation('app_startup');
-        monitoring.logResourceUsage();
-    })
-    .catch((error) => {
-        monitoring.endOperation('app_startup');
-        const errorHandler = container.get<ErrorHandlerService>(ServiceContainer.TOKENS.ErrorHandler);
-        errorHandler.handleFatalError(error, 'Application startup');
-    });
+main();

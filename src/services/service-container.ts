@@ -6,10 +6,14 @@ import { IGitService } from '../interfaces/git.interface';
 import { IHistoricalService } from '../interfaces/historical.interface';
 import { IMarkdownService } from '../interfaces/markdown.interface';
 import { IMonitoringService } from '../interfaces/monitoring.interface';
+import { IRateLimiterService } from '../interfaces/rate-limiter.interface';
+import { IRetryPolicyService } from '../interfaces/retry-policy.interface';
+import { IParameterManager } from '../interfaces/parameter-manager.interface';
 
 export class ServiceContainer {
     private static instance: ServiceContainer;
     private services: Map<string, any> = new Map();
+    private initialized: boolean = false;
 
     private constructor() {}
 
@@ -32,6 +36,14 @@ export class ServiceContainer {
         return service;
     }
 
+    isInitialized(): boolean {
+        return this.initialized;
+    }
+
+    markAsInitialized(): void {
+        this.initialized = true;
+    }
+
     static readonly TOKENS = {
         Logger: 'Logger',
         Config: 'Config',
@@ -42,8 +54,25 @@ export class ServiceContainer {
         Markdown: 'Markdown',
         Monitoring: 'Monitoring',
         ErrorHandler: 'ErrorHandler',
-        ProcessManager: 'ProcessManager'
+        ProcessManager: 'ProcessManager',
+        RateLimiter: 'RateLimiter',
+        RetryPolicy: 'RetryPolicy',
+        ParameterManager: 'ParameterManager',
+        Validation: 'Validation'
     } as const;
+
+    clear(): void {
+        this.services.clear();
+        this.initialized = false;
+    }
+
+    hasService(token: string): boolean {
+        return this.services.has(token);
+    }
+
+    listRegisteredServices(): string[] {
+        return Array.from(this.services.keys());
+    }
 }
 
 // Export type for service tokens
