@@ -22,48 +22,56 @@ export class ServiceInitializer {
             return;
         }
 
+        // Create and register the logger first as it's required by other services
+        const logger = LoggerService.getInstance();
+        
+        // Enable debug mode if --debug flag is present
+        if (args.includes('--debug')) {
+            logger.enableDebug();
+        }
+
+        this.container.register(ServiceContainer.TOKENS.Logger, logger);
+
         try {
-            // Initialize logger first as it's required by other services
-            const logger = new LoggerService();
-            this.container.register(ServiceContainer.TOKENS.Logger, logger);
-
-            // Initialize core services with explicit logger dependency
+            // Create core services with explicit logger dependency
             const errorHandler = new ErrorHandlerService(logger);
-            const processManager = new ProcessManagerService(logger);
-            const monitoring = new MonitoringService(logger);
-            const validation = new ValidationService(logger);
-
             this.container.register(ServiceContainer.TOKENS.ErrorHandler, errorHandler);
+
+            const processManager = new ProcessManagerService(logger);
             this.container.register(ServiceContainer.TOKENS.ProcessManager, processManager);
+
+            const monitoring = new MonitoringService(logger);
             this.container.register(ServiceContainer.TOKENS.Monitoring, monitoring);
+
+            const validation = new ValidationService(logger);
             this.container.register(ServiceContainer.TOKENS.Validation, validation);
 
             monitoring.startOperation('service_initialization');
 
             try {
                 // Initialize parameter management
-                const parameterManager = new ParameterManagerService(logger, validation);
+                const parameterManager = new ParameterManagerService();
                 await parameterManager.initialize(args);
                 this.container.register(ServiceContainer.TOKENS.ParameterManager, parameterManager);
 
                 // Initialize configuration service
-                const config = new ConfigService(logger);
+                const config = new ConfigService();
                 this.container.register(ServiceContainer.TOKENS.Config, config);
 
                 // Initialize supporting services
-                const rateLimiter = new RateLimiterService(logger);
-                const retryPolicy = new RetryPolicyService(logger);
-                const cache = new CacheService(logger, config);
+                const rateLimiter = new RateLimiterService();
+                const retryPolicy = new RetryPolicyService();
+                const cache = new CacheService();
 
                 this.container.register(ServiceContainer.TOKENS.RateLimiter, rateLimiter);
                 this.container.register(ServiceContainer.TOKENS.RetryPolicy, retryPolicy);
                 this.container.register(ServiceContainer.TOKENS.Cache, cache);
 
                 // Initialize main services
-                const github = new GitHubService(logger, config, rateLimiter, retryPolicy);
-                const git = new GitService(logger);
-                const historical = new HistoricalService(logger, config);
-                const markdown = new MarkdownService(logger);
+                const github = new GitHubService();
+                const git = new GitService();
+                const historical = new HistoricalService();
+                const markdown = new MarkdownService();
 
                 this.container.register(ServiceContainer.TOKENS.GitHub, github);
                 this.container.register(ServiceContainer.TOKENS.Git, git);
@@ -80,12 +88,13 @@ export class ServiceInitializer {
                 this.container.markAsInitialized();
 
                 monitoring.endOperation('service_initialization');
+                logger.info('Services initialized successfully');
             } catch (error) {
                 monitoring.endOperation('service_initialization');
                 errorHandler.handleFatalError(error, 'Service initialization');
             }
         } catch (error) {
-            console.error('Fatal error during core service initialization:', error);
+            logger.fatal('Fatal error during core service initialization:', error);
             process.exit(1);
         }
     }
@@ -102,22 +111,23 @@ export class ServiceInitializer {
     }
 
     static async shutdown(): Promise<void> {
-        const monitoring = this.container.get<MonitoringService>(ServiceContainer.TOKENS.Monitoring);
-        const errorHandler = this.container.get<ErrorHandlerService>(ServiceContainer.TOKENS.ErrorHandler);
-        const processManager = this.container.get<ProcessManagerService>(ServiceContainer.TOKENS.ProcessManager);
-        const logger = this.container.get<LoggerService>(ServiceContainer.TOKENS.Logger);
-
-        monitoring.startOperation('service_shutdown');
-
+        const logger = LoggerService.getInstance();
+        
         try {
+            const monitoring = this.container.get<MonitoringService>(ServiceContainer.TOKENS.Monitoring);
+            const processManager = this.container.get<ProcessManagerService>(ServiceContainer.TOKENS.ProcessManager);
+
+            monitoring.startOperation('service_shutdown');
+
             await processManager.handleShutdown();
             this.container.clear();
+            
             monitoring.endOperation('service_shutdown');
             monitoring.logResourceUsage();
-        } catch (error) {
-            errorHandler.handleError(error, 'Service shutdown');
-        } finally {
+            
             logger.info('Service shutdown complete');
+        } catch (error) {
+            logger.error('Error during shutdown:', error);
         }
     }
 }
