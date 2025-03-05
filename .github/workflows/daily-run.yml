@@ -1,0 +1,42 @@
+name: Daily Repository Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run at 00:00 UTC every day
+  workflow_dispatch:      # Allow manual trigger
+
+jobs:
+  update-repos:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # Needed for pushing changes
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper git operations
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'Zaid-maker'
+          git config --global user.email '53424436+Zaid-maker@users.noreply.github.com'
+
+      - name: Run repository finder
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun run index.ts --min-stars 100 --year-start 2010 --year-end 2012 --auto-push
+
+      - name: Error check
+        if: failure()
+        run: |
+          echo "::error::Script execution failed. Check the logs for details."
+          exit 1
