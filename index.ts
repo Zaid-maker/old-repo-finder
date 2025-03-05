@@ -458,13 +458,13 @@ async function commitAndPush() {
     try {
         console.log("🔄 Committing and pushing changes...");
         
-        // Add changes
-        const addProcess = Bun.spawn(["git", "add", RESULT_FILE]);
+        // Add both files
+        const addProcess = Bun.spawn(["git", "add", RESULT_FILE, "historical-data.json"]);
         await addProcess.exited;
 
         // Create commit with timestamp
         const date = new Date().toISOString().split('T')[0];
-        const commitMsg = `Update old repositories list (${date})`;
+        const commitMsg = `Update repository data (${date})`;
         const commitProcess = Bun.spawn(["git", "commit", "-m", commitMsg]);
         await commitProcess.exited;
 
