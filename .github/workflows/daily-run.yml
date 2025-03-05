@@ -33,7 +33,7 @@ jobs:
       - name: Run repository finder
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
-        run: bun run index.ts --min-stars 100 --year-start 2010 --year-end 2012 --auto-push
+        run: bun run daily
 
       - name: Error check
         if: failure()

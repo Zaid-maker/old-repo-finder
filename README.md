@@ -1,30 +1,31 @@
-# Old Repository Finder 🕰️
+# 🕰️ Old Repository Finder
 
-A powerful tool to discover and analyze historical GitHub repositories.
+A tool to discover and analyze historical GitHub repositories. Find gems from the early days of GitHub and track their changes over time.
 
-## Features
+## 🌟 Features
 
-- 🔍 Find repositories from specific time periods
-- ⭐ Filter by minimum stars
-- 📊 Generate detailed markdown reports
-- 📈 Track changes between runs
-- 🚀 Concurrent API requests
-- 💾 Smart caching
-- 🔄 Automatic retries
-- ⏱️ Request timeout handling
-- 📝 Git integration
-- 🐛 Debug mode
+- Search for repositories within specific time periods
+- Filter by minimum star count
+- Track star count changes over time
+- Generate detailed Markdown reports
+- Language distribution analysis
+- Concurrent API requests for better performance
+- Built with Bun and TypeScript
+- GitHub Actions automation
 
-## Prerequisites
+## 🚀 Getting Started
 
-- [Bun](https://bun.sh) runtime
-- GitHub Personal Access Token
+### Prerequisites
 
-## Setup
+- [Bun](https://bun.sh) installed
+- GitHub Personal Access Token (PAT)
 
-1. Set your GitHub token:
+### Installation
+
+1. Clone the repository:
 ```bash
-export GITHUB_TOKEN=your_token_here
+git clone https://github.com/your-username/old-repo-finder.git
+cd old-repo-finder
 ```
 
 2. Install dependencies:
@@ -32,107 +33,85 @@ export GITHUB_TOKEN=your_token_here
 bun install
 ```
 
-## Usage
+3. Set up your GitHub PAT:
+```bash
+export GH_PAT='your-github-pat'
+```
+
+### Usage
 
 Basic usage:
 ```bash
-bun run index.ts
+bun run start
 ```
 
-Advanced usage:
+With options:
 ```bash
-bun run index.ts --min-stars 100 --year-start 2010 --year-end 2012 --concurrency 3 --auto-push --debug
+bun run start --min-stars 100 --year-start 2010 --year-end 2012 --auto-push
 ```
 
-### Command Line Options
+Development mode with debug logs:
+```bash
+bun run dev
+```
 
-- `--min-stars <number>`: Minimum number of stars (default: 0)
-- `--max-repos <number>`: Maximum number of repositories to fetch (default: 1000)
+Run daily update:
+```bash
+bun run daily
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── config/         # Configuration and constants
+├── services/       # Core functionality modules
+│   ├── data.ts    # Data persistence operations
+│   ├── git.ts     # Git operations
+│   ├── github.ts  # GitHub API interactions
+│   └── markdown.ts # Report generation
+├── types/         # TypeScript type definitions
+├── utils/         # Utility functions
+│   ├── cli.ts     # CLI argument handling
+│   └── index.ts   # Common utilities
+└── index.ts       # Main entry point
+```
+
+## ⚙️ Configuration
+
+Available command line options:
+
+- `--min-stars <number>`: Minimum star count (default: 0)
+- `--max-repos <number>`: Maximum repositories to fetch (default: 1000)
 - `--concurrency <number>`: Number of concurrent requests (1-5, default: 3)
-- `--year-start <number>`: Start year for search (≥ 2008, default: 2008)
-- `--year-end <number>`: End year for search (default: 2013)
+- `--year-start <number>`: Start year for search (≥ 2008)
+- `--year-end <number>`: End year for search
 - `--auto-push`: Automatically commit and push changes
-- `--debug`: Enable debug mode for detailed logging
-- `--help`: Show help message
+- `--debug`: Enable debug mode
 
-## Output
+## 🔄 GitHub Actions
 
-The script generates two main files:
-1. `old-repos.md`: Comprehensive report with:
-   - Executive summary
-   - Quick stats
-   - Language distribution
-   - Top repositories
-   - Complete repository list
-   - Changes since last run (if available)
+The repository includes a GitHub Actions workflow that:
 
-2. `historical-data.json`: Historical tracking data containing:
-   - Previous run statistics
-   - Repository changes
-   - Star count changes
+1. Runs daily at midnight UTC
+2. Searches for repositories matching criteria
+3. Generates a new report
+4. Commits and pushes changes automatically
 
-### Report Features
+To use the workflow:
 
-- 📊 Statistical analysis
-- 📈 Visual progress bars
-- 📉 Language distribution charts
-- 🔄 Change tracking between runs
-- ⭐ Star count changes
-- 📋 Repository metrics
+1. Fork this repository
+2. Add your `GH_PAT` to repository secrets
+3. Enable GitHub Actions
 
-## Cache
+## 🤝 Contributing
 
-- Cached data expires after 1 hour
-- Reduces API calls for frequently accessed data
-- Automatically handles cache invalidation
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
-## Error Handling
+## 📄 License
 
-- 🔄 Automatic retries with exponential backoff
-- ⏱️ Request timeout protection (30s default)
-- 📝 Detailed error logging in debug mode
-- 🚦 Rate limit handling with automatic pausing
-
-## Debug Mode
-
-When running with `--debug`, you get:
-- Detailed API request/response logs
-- Cache operation logs
-- Error stack traces
-- Performance metrics
-- Rate limit information
-
-## Git Integration
-
-With `--auto-push`:
-1. Automatically stages changes
-2. Creates a commit with timestamp
-3. Pushes to current branch
-4. Includes changes summary in commit message
-
-## Best Practices
-
-1. Use `--concurrency` based on your rate limit
-2. Enable `--debug` when troubleshooting
-3. Start with small date ranges first
-4. Use caching for repeated searches
-5. Check historical comparisons for trends
-
-## Rate Limiting
-
-The tool automatically handles GitHub API rate limits by:
-- Monitoring remaining requests
-- Waiting for reset when needed
-- Displaying rate limit status
-- Caching to reduce API calls
-
-## Error Recovery
-
-- Continues partial results on non-fatal errors
-- Saves progress before exiting
-- Maintains data integrity
-- Provides detailed error context
-
-## Contributing
-
-Feel free to open issues or submit pull requests!
+This project is licensed under the MIT License - see the LICENSE file for details.
