@@ -66,16 +66,16 @@ function logError(error: unknown, context: string): void {
     debug('Detailed error:', JSON.stringify(logMessage, null, 2));
 }
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GH_PAT = process.env.GH_PAT;
 const RESULT_FILE = "old-repos.md";
 
-if (!GITHUB_TOKEN) {
-    console.error("Missing GITHUB_TOKEN environment variable");
+if (!GH_PAT) {
+    console.error("Missing GH_PAT environment variable");
     process.exit(1);
 }
 
 const headers = {
-    Authorization: `token ${GITHUB_TOKEN}`,
+    Authorization: `token ${GH_PAT}`,
     Accept: "application/vnd.github.v3+json",
     "User-Agent": "OldReposFinder/1.0",
 };
