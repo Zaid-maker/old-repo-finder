@@ -145,7 +145,13 @@ async function fetchWithRetry(url: string, options: { headers: any, retries?: nu
             
             clearTimeout(timeoutId);
             debug('Response status:', response.status);
-            debug('Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            // Fix Headers.entries() type error by converting to Record
+            const headerObj: Record<string, string> = {};
+            response.headers.forEach((value, key) => {
+                headerObj[key] = value;
+            });
+            debug('Response headers:', headerObj);
             
             if (response.ok) return response;
             
@@ -171,7 +177,8 @@ async function fetchWithRetry(url: string, options: { headers: any, retries?: nu
                 continue;
             }
             
-            if (error.name === 'AbortError') {
+            // Fix error type checking
+            if (error instanceof Error && error.name === 'AbortError') {
                 debug('Request timed out after', timeout, 'ms');
                 console.log('⏱️ Request timed out, retrying...');
             }
