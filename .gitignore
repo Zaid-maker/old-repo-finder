@@ -9,6 +9,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+*.log
 
 # Caches
 
@@ -173,3 +174,14 @@ dist
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+
+# Bun
+bun.lockb
