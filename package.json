@@ -4,9 +4,9 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "start": "bun run src/index.ts",
-    "dev": "bun run src/index.ts --debug",
-    "daily": "bun run src/index.ts --min-stars 100 --year-start 2010 --year-end 2012 --auto-push"
+    "start": "GH_PAT=\"${GH_PAT}\" bun run src/index.ts",
+    "dev": "GH_PAT=\"${GH_PAT}\" bun run src/index.ts --debug",
+    "daily": "GH_PAT=\"${GH_PAT}\" bun run src/index.ts --min-stars 100 --year-start 2010 --year-end 2012 --auto-push"
   },
   "devDependencies": {
     "@types/bun": "latest"

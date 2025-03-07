@@ -17,16 +17,22 @@ class RateLimitError extends GitHubAPIError {
 }
 
 const cache: Cache = {};
-const GH_PAT = process.env.GH_PAT;
+
+// Try to get token from multiple sources
+const GH_PAT = process.env.GH_PAT || process.env.GITHUB_TOKEN || Bun.env.GH_PAT || Bun.env.GITHUB_TOKEN;
 
 if (!GH_PAT) {
-    console.error("Missing GH_PAT environment variable");
+    console.error("❌ Missing GitHub token. Please set GH_PAT or GITHUB_TOKEN environment variable.");
+    console.error("You can set it using:");
+    console.error("  export GH_PAT='your-token-here'");
+    console.error("  # or");
+    console.error("  export GITHUB_TOKEN='your-token-here'");
     process.exit(1);
 }
 
 const headers = {
     ...GITHUB_API.headers,
-    Authorization: `token ${GH_PAT}`
+    Authorization: `Bearer ${GH_PAT}`
 };
 
 function getCacheKey(year: number, page: number, minStars: number): string {
