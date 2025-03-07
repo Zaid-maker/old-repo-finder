@@ -1,4 +1,5 @@
 import { CONSTANTS } from '../config';
+import { debug } from '../utils';
 
 export async function commitAndPush(): Promise<void> {
     const gitStatus = Bun.spawn(["git", "status", "--porcelain"], {
@@ -15,12 +16,7 @@ export async function commitAndPush(): Promise<void> {
         console.log("🔄 Committing and pushing changes...");
         
         // Add both files
-        const addProcess = Bun.spawn([
-            "git", 
-            "add", 
-            CONSTANTS.RESULT_FILE, 
-            CONSTANTS.HISTORICAL_FILE
-        ]);
+        const addProcess = Bun.spawn(["git", "add", CONSTANTS.RESULT_FILE, CONSTANTS.HISTORICAL_FILE]);
         await addProcess.exited;
 
         // Create commit with timestamp
@@ -36,5 +32,6 @@ export async function commitAndPush(): Promise<void> {
         console.log("✅ Successfully pushed changes to repository");
     } catch (error) {
         console.error("❌ Failed to push changes:", error instanceof Error ? error.message : error);
+        // Don't exit, as we still want to keep the generated file
     }
 }

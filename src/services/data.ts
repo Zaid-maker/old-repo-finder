@@ -1,4 +1,4 @@
-import { Repository, HistoricalData, ComparisonResult } from '../types';
+import type { Repository, HistoricalData, ComparisonResult } from '../types';
 import { CONSTANTS } from '../config';
 import { debug, logError } from '../utils';
 

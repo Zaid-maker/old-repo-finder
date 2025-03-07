@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import type { Repository } from './types';
 import { DEFAULT_OPTIONS, CONSTANTS } from './config';
 import { checkGitHubAccess, fetchPage } from './services/github';
 import { generateMarkdown, generateComparisonMarkdown } from './services/markdown';
@@ -7,7 +8,6 @@ import { saveHistoricalData, compareWithPreviousRun } from './services/data';
 import { commitAndPush } from './services/git';
 import { createProgressBar, debug, printHelp } from './utils';
 import { parseArgs } from './utils/cli';
-import { Repository } from './types';
 
 async function fetchOldRepositories(): Promise<Repository[]> {
     const repos: Repository[] = [];

@@ -1,4 +1,4 @@
-import { Options, ValidationResult } from '../types';
+import type { Options, ValidationResult } from '../types';
 import { DEFAULT_OPTIONS } from '../config';
 
 export function debug(message: string, ...args: any[]): void {

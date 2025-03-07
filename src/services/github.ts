@@ -1,4 +1,4 @@
-import { Repository, GitHubSearchResponse, Cache } from '../types';
+import type { Repository, GitHubSearchResponse, Cache } from '../types';
 import { CONSTANTS, GITHUB_API } from '../config';
 import { debug, logError } from '../utils';
 

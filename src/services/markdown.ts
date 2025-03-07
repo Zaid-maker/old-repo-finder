@@ -1,4 +1,4 @@
-import { Repository } from '../types';
+import type { Repository, ComparisonResult } from '../types';
 import { DEFAULT_OPTIONS } from '../config';
 
 export function generateMarkdown(repos: Repository[]): string {

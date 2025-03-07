@@ -1,7 +1,6 @@
 import { Options } from '../types';
 import { DEFAULT_OPTIONS } from '../config';
-import { validateOptions } from './index';
-import { debug } from './index';
+import { validateOptions, debug } from './index';
 
 export async function parseArgs(): Promise<void> {
     const args = process.argv.slice(2);
